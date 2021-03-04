@@ -1,7 +1,7 @@
 OBJ_DIR = obj
 SRC_DIR = src
 INC_DIR = include
-BIN_INC = bin
+BIN_DIR = bin
 
 OBJETOS = client.o main.o memory.o process.o proxy.o server.o synchronization.o
 
@@ -12,11 +12,11 @@ vpath %.h $(INC_DIR)
 
 CFLAGS = -Wall -I $(INC_DIR)
 
-out : $(OBJETOS)
+sovaccines : $(OBJETOS)
 	$(CC) $(addprefix $(OBJ_DIR)/,$(OBJETOS)) -o $(BIN_DIR)/$@ 
 
 %.o: $(SRC_DIR)/%.c $($@) 
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<
 
 clean :
-	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/out
+	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines
