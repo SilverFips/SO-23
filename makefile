@@ -13,7 +13,7 @@ vpath %.h $(INC_DIR)
 CFLAGS = -Wall -I $(INC_DIR)
 
 sovaccines : $(OBJETOS)
-	$(CC) $(addprefix $(OBJ_DIR)/,$(OBJETOS)) -o $(BIN_DIR)/$@ 
+	$(CC) $(CFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJETOS)) -o $(BIN_DIR)/$@ 
 
 %.o: $(SRC_DIR)/%.c $($@) 
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<

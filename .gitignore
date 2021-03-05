@@ -55,5 +55,5 @@ dkms.conf
 /.vscode
 
 # bin
-bin/*
-obj/*
+
+
