@@ -171,15 +171,15 @@ void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
 	int servers = data->n_servers;
 
 	for(int i = 0; i < clientes; i++){
-		data->results = wait_process(data->client_pids[i]);
+		wait_process(data->client_pids[i]);					//Ver para onde se mete o retorno do wait_process (int)
 		data->client_stats[i] += 1;
 	}
 	for(int i = 0; i < proxies; i++){
-		data->results = wait_process(data->proxy_pids[i]);
+		dwait_process(data->proxy_pids[i]);
 		data->proxy_stats[i] += 1;
 	}
 	for(int i = 0; i < servers; i++){
-		data->results = wai_process(data->server_pids[i]);
+		wai_process(data->server_pids[i]);
 		data->server_stats[i] += 1;
 	}
 }

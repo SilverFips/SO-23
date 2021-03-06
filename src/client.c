@@ -13,7 +13,14 @@
 * o número de operações processadas. Para efetuar estes passos, pode usar os
 * outros métodos auxiliares definidos em client.h. 
 */
-int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems);
+int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+
+    whiel(1){
+        
+    }
+
+
+}
 
 
 /* Função que lê uma operação do buffer de memória partilhada entre a 
@@ -22,21 +29,21 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 * a operação, deve verificar se data->terminate tem valor 1. Em caso 
 * afirmativo, retorna imediatamente da função.
 */
-void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems);
+void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
 
 
 /* Função que processa uma operação, alterando o seu campo cliente para o id
 * passado como argumento, alterando o estado da mesma para 'C' (client), e 
 * incrementando o contador de operações.
 */
-void client_process_operation(struct operation* op, int cient_id, int* counter);
+void client_process_operation(struct operation* op, int cient_id, int* counter){}
 
 
 /* Função que escreve uma operação no buffer de memória partilhada entre
 * clientes e proxies, efetuando a necessária sincronização antes e depois
 * de escrever.
 */
-void client_send_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems);
+void client_send_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
 
 
 /* Função que lê uma operação do buffer de memória partilhada entre 
@@ -45,7 +52,7 @@ void client_send_operation(struct operation* op, struct communication_buffers* b
 * tentar ler a operação, deve verificar se data->terminate tem valor 1.
 * Em caso afirmativo, retorna imediatamente da função.
 */
-void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems);
+void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
 
 
 /* Função que guarda uma operação no array de operações finalizadas da
@@ -54,5 +61,5 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
 * Imprime também uma mensagem para o terminal a avisar que a operação 
 * terminou.
 */
-void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems);
+void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){}
 

@@ -30,7 +30,8 @@ int launch_process(int process_id, int process_code, struct communication_buffer
             default:
                 break;
         }
-        return getpid();
+    }else{
+        return fork();
     }
 }
 
