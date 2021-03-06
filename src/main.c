@@ -1,8 +1,10 @@
 #ifndef MAIN_H_GUARD
 #define MAIN_H_GUARD
 
+#include <stdio.h>
 #include "memory.h"
 #include "synchronization.h"
+
 
 //Estrutura que agrega a informação necessária pela main do sovaccines.
 struct main_data {
@@ -34,7 +36,25 @@ struct main_data {
 * estrutura main_data.
 */
 void main_args(int argc, char* argv[], struct main_data* data) {
-
+	for(int i = 1; i < argc; i++){
+		switch (i) {
+			case 1:
+				data->max_ops = *argv[i];
+				break;
+			case 2:
+				data->buffers_size = *argv[i];
+				break;
+			case 3:
+				data->n_clients = *argv[i];
+				break;
+			case 4:
+				data->n_proxies = *argv[i];
+				break;
+			case 5:
+				data->n_servers = *argv[i];
+				break;
+		}
+	}
 }
 
 /* Função que reserva a memória dinâmica necessária para a execução
@@ -70,6 +90,20 @@ void create_semaphores(struct main_data* data, struct semaphores* sems){
 * da estrutura data.
 */
 void launch_processes(struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) {
+	int clientes = data->n_clients;
+	int proxies = data->n_proxies;
+	int servers = data->n_servers;
+
+	for(int i = 0; i < clientes; i++){
+		data->client_stats[i] = launch_process(i, 0, buffers, data, sems);
+	}
+	for(int i = 0; i < proxies; i++){
+		data->proxy_pids[i] = launch_process(i, 1, buffers, data, sems);
+	}
+	for(int i = 0; i < servers; i++){
+		data->server_pids[i] = launch_process(i, 2, buffers, data, sems);
+	}
+	
 
 }
 
@@ -127,13 +161,51 @@ void wakeup_processes(struct main_data* data, struct semaphores* sems){}
 * incluindo clientes, proxies e servidores. Para tal, pode usar a função 
 * wait_process do process.h.
 */
-void wait_processes(struct main_data* data){}
+void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
+
+	//Chamar a funcao wait process
+	// guardar no historico
+
+	int clientes = data->n_clients;
+	int proxies = data->n_proxies;
+	int servers = data->n_servers;
+
+	for(int i = 0; i < clientes; i++){
+		data->results = wait_process(data->client_pids[i]);
+		data->client_stats[i] += 1;
+	}
+	for(int i = 0; i < proxies; i++){
+		data->results = wait_process(data->proxy_pids[i]);
+		data->proxy_stats[i] += 1;
+	}
+	for(int i = 0; i < servers; i++){
+		data->results = wai_process(data->server_pids[i]);
+		data->server_stats[i] += 1;
+	}
+}
 
 
 /* Função que imprime as estatisticas finais do sovaccines, nomeadamente quantas
 * operações foram processadas por cada cliente, proxy e servidor.
 */
-void write_statistics(struct main_data* data){}
+void write_statistics(struct main_data* data){
+	printf("Terminando o sovaccines! Imprimindo estatisticas:\n");
+	
+	int clientes = data->n_clients;
+	int proxies = data->n_proxies;
+	int servers = data->n_servers;
+
+	for(int i = 0; i < clientes; i++){
+		printf("CLIENTE %d recebeu %d pedidos!\n", i, data->client_stats[i]);
+	}
+	for(int i = 0; i < proxies; i++){
+		printf("PROXY %d recebeu %d pedidos!\n", i, data->proxy_stats[i]);
+	}
+	for(int i = 0; i < servers; i++){
+		printf("SERVER %d recebeu %d pedidos!\n", i, data->server_stats[i]);
+	}
+
+}
 
 /* Função que liberta todos os buffers de memória dinâmica previamente
 * reservados na estrutura data.
@@ -152,36 +224,49 @@ void destroy_semaphores(struct semaphores* sems){}
 
 int main(int argc, char *argv[]) {
 //init data structures
-	struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
-	struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
-	buffers->main_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
-	buffers->cli_prx = create_dynamic_memory(sizeof(struct circular_buffer));
-	buffers->prx_srv = create_dynamic_memory(sizeof(struct rnd_access_buffer));
-	buffers->srv_cli = create_dynamic_memory(sizeof(struct circular_buffer));
-	struct semaphores* sems = create_dynamic_memory(sizeof(struct semaphores));
-	sems->main_cli = create_dynamic_memory(sizeof(struct prodcons));
-	sems->cli_prx = create_dynamic_memory(sizeof(struct prodcons));
-	sems->prx_srv = create_dynamic_memory(sizeof(struct prodcons));
-	sems->srv_cli = create_dynamic_memory(sizeof(struct prodcons));
-	//execute main code
-	main_args(argc, argv, data);
-	create_dynamic_memory_buffers(data);
-	create_shared_memory_buffers(data, buffers);
-	create_semaphores(data, sems);
-	launch_processes(buffers, data, sems);
-	user_interaction(buffers, data, sems);
-	//release final memory
-	destroy_dynamic_memory(data);
-	destroy_dynamic_memory(buffers->main_cli);
-	destroy_dynamic_memory(buffers->cli_prx);
-	destroy_dynamic_memory(buffers->prx_srv);
-	destroy_dynamic_memory(buffers->srv_cli);
-	destroy_dynamic_memory(buffers);
-	destroy_dynamic_memory(sems->main_cli);
-	destroy_dynamic_memory(sems->cli_prx);
-	destroy_dynamic_memory(sems->prx_srv);
-	destroy_dynamic_memory(sems->srv_cli);
-	destroy_dynamic_memory(sems);
+
+	if(argc < 6) {
+		perror("Nao foram dados parametros suficientes.");
+        exit(1);
+	}else{
+		/*
+		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
+		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
+		buffers->main_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
+		buffers->cli_prx = create_dynamic_memory(sizeof(struct circular_buffer));
+		buffers->prx_srv = create_dynamic_memory(sizeof(struct rnd_access_buffer));
+		buffers->srv_cli = create_dynamic_memory(sizeof(struct circular_buffer));
+		struct semaphores* sems = create_dynamic_memory(sizeof(struct semaphores));
+		sems->main_cli = create_dynamic_memory(sizeof(struct prodcons));
+		sems->cli_prx = create_dynamic_memory(sizeof(struct prodcons));
+		sems->prx_srv = create_dynamic_memory(sizeof(struct prodcons));
+		sems->srv_cli = create_dynamic_memory(sizeof(struct prodcons));
+		*/
+		//execute main code
+		main_args(argc, argv, data);
+		create_dynamic_memory_buffers(data);
+		create_shared_memory_buffers(data, buffers);
+		create_semaphores(data, sems);
+		launch_processes(buffers, data, sems);
+		user_interaction(buffers, data, sems);
+
+		/*
+		//release final memory
+		destroy_dynamic_memory(data);
+		destroy_dynamic_memory(buffers->main_cli);
+		destroy_dynamic_memory(buffers->cli_prx);
+		destroy_dynamic_memory(buffers->prx_srv);
+		destroy_dynamic_memory(buffers->srv_cli);
+		destroy_dynamic_memory(buffers);
+		destroy_dynamic_memory(sems->main_cli);
+		destroy_dynamic_memory(sems->cli_prx);
+		destroy_dynamic_memory(sems->prx_srv);
+		destroy_dynamic_memory(sems->srv_cli);
+		destroy_dynamic_memory(sems);
+		*/
+	}
+
+	
 }
 
 
