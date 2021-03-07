@@ -1,4 +1,4 @@
-
+#include <stdio.h>
 #include "memory.h"
 #include "main.h"
 
@@ -15,9 +15,7 @@
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
 
-    whiel(1){
-        
-    }
+    printf("Cheguei ao filho client");
 
 
 }

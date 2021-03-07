@@ -20,3 +20,6 @@ sovaccines : $(OBJETOS)
 
 clean :
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines
+
+valgrind:
+	valgrind --leak-check=full $(BIN_DIR)/sovaccines

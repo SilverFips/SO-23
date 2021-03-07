@@ -1,5 +1,9 @@
 
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "memory.h"
 #include "main.h"
 
@@ -11,27 +15,24 @@
 */
 int launch_process(int process_id, int process_code, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
 
-    int fork = fork();
+    int pid = fork();
 
-    if(fork == 0){
+    if(pid == 0){
         switch(process_code){
             case 0:
-                int retur = execute_client(process_id, buffers, data, sems);
-                exit(retur);
+                exit(execute_client(process_id, buffers, data, sems));
                 break;
             case 1:
-                int retur = execute_proxies(process_id, buffers, data, sems);
-                exit(retur);
+                exit(execute_proxy(process_id, buffers, data, sems));
                 break;
             case 2:
-                int retur = execute_server(process_id, buffers, data, sems);
-                exit(retur);
+                exit(execute_server(process_id, buffers, data, sems));
                 break;
             default:
                 break;
         }
     }else{
-        return fork();
+        return pid;
     }
 }
 
@@ -41,7 +42,7 @@ int launch_process(int process_id, int process_code, struct communication_buffer
 */
 int wait_process(int process_id){
     int result;
-    waitpid(process_id, &result);
+    waitpid(process_id, &result, WUNTRACED);
     if(WIFEXITED(result)){
         return WEXITSTATUS(result);
     }else{

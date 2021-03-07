@@ -175,11 +175,11 @@ void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
 		data->client_stats[i] += 1;
 	}
 	for(int i = 0; i < proxies; i++){
-		dwait_process(data->proxy_pids[i]);
+		wait_process(data->proxy_pids[i]);
 		data->proxy_stats[i] += 1;
 	}
 	for(int i = 0; i < servers; i++){
-		wai_process(data->server_pids[i]);
+		wait_process(data->server_pids[i]);
 		data->server_stats[i] += 1;
 	}
 }
@@ -229,6 +229,9 @@ int main(int argc, char *argv[]) {
 		perror("Nao foram dados parametros suficientes.");
         exit(1);
 	}else{
+		struct main_data* data;
+		struct communication_buffers* buffers;
+		struct semaphores* sems; 
 		/*
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
 		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
@@ -244,11 +247,13 @@ int main(int argc, char *argv[]) {
 		*/
 		//execute main code
 		main_args(argc, argv, data);
+		/**
 		create_dynamic_memory_buffers(data);
 		create_shared_memory_buffers(data, buffers);
 		create_semaphores(data, sems);
+		*/
 		launch_processes(buffers, data, sems);
-		user_interaction(buffers, data, sems);
+		//user_interaction(buffers, data, sems);
 
 		/*
 		//release final memory

@@ -1,5 +1,5 @@
 
-
+#include <stdio.h>
 #include "memory.h"
 #include "main.h"
 
@@ -12,7 +12,10 @@
 * número de operações processadas. Para efetuar estes passos, pode usar os
 * outros métodos auxiliares definidos em server.h.
 */
-int execute_server(int server_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
+int execute_server(int server_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+
+    printf("Cheguei ao filho server");
+}
 
 
 /* Função que lê uma operação do buffer de memória partilhada entre
