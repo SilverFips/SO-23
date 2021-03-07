@@ -1,5 +1,6 @@
 
-
+#include <stdlib.h>
+#include <string.h>
 #include "memory-private.h"
 
 // Nomes usados na criação de zonas de memoria partilhada
@@ -46,7 +47,10 @@ void* create_shared_memory(char* name, int size){}
 * por size, preenche essa zona de memória com o valor 0, e retorna um 
 * apontador para a mesma.
 */
-void* create_dynamic_memory(int size){}
+void* create_dynamic_memory(int size){
+	void *s = malloc(size);
+	return memset(s, 0, size);
+}
 
 
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
@@ -56,7 +60,9 @@ void destroy_shared_memory(char* name, void* ptr, int size){}
 
 /* Função que liberta uma zona de memória partilhada previamente reservada.
 */
-void destroy_dynamic_memory(void* ptr){}
+void destroy_dynamic_memory(void* ptr){
+	free(ptr);
+}
 
 
 /* Função que escreve uma operação num buffer de acesso aleatório. A

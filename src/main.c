@@ -1,9 +1,11 @@
 #ifndef MAIN_H_GUARD
 #define MAIN_H_GUARD
 
+#include <stdlib.h>
 #include <stdio.h>
 #include "memory.h"
 #include "synchronization.h"
+
 
 
 //Estrutura que agrega a informação necessária pela main do sovaccines.
@@ -62,6 +64,17 @@ void main_args(int argc, char* argv[], struct main_data* data) {
 * main_data. Para tal, pode ser usada a função create_dynamic_memory do memory.h.
 */
 void create_dynamic_memory_buffers(struct main_data* data) {
+	int clientes = data->n_clients;
+	int proxies = data->n_proxies;
+	int servers = data->n_servers;
+
+	data->client_pids = create_dynamic_memory(clientes * sizeof(int));
+	data->proxy_pids = create_dynamic_memory(proxies * sizeof(int));
+	data->server_pids = create_dynamic_memory(servers * sizeof(int));
+
+	data->client_stats = create_dynamic_memory(clientes * sizeof(int));
+	data->proxy_stats = create_dynamic_memory(proxies * sizeof(int));
+	data->server_stats = create_dynamic_memory(servers * sizeof(int));
 
 }
 
@@ -210,7 +223,16 @@ void write_statistics(struct main_data* data){
 /* Função que liberta todos os buffers de memória dinâmica previamente
 * reservados na estrutura data.
 */
-void destroy_dynamic_memory_buffers(struct main_data* data){}
+void destroy_dynamic_memory_buffers(struct main_data* data){
+	destroy_dynamic_memory(data->client_pids);
+	destroy_dynamic_memory(data->proxy_pids);
+	destroy_dynamic_memory(data->server_pids);
+
+	destroy_dynamic_memory(data->proxy_stats);
+	destroy_dynamic_memory(data->server_stats);
+	destroy_dynamic_memory(data->server_stats);
+	
+}
 
 
 /* Função que liberta todos os buffers de memória partilhada previamente
@@ -229,10 +251,8 @@ int main(int argc, char *argv[]) {
 		perror("Nao foram dados parametros suficientes.");
         exit(1);
 	}else{
-		struct main_data* data;
-		struct communication_buffers* buffers;
-		struct semaphores* sems; 
-		/*
+		
+		
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
 		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
 		buffers->main_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
@@ -244,7 +264,7 @@ int main(int argc, char *argv[]) {
 		sems->cli_prx = create_dynamic_memory(sizeof(struct prodcons));
 		sems->prx_srv = create_dynamic_memory(sizeof(struct prodcons));
 		sems->srv_cli = create_dynamic_memory(sizeof(struct prodcons));
-		*/
+		
 		//execute main code
 		main_args(argc, argv, data);
 		/**

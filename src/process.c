@@ -6,6 +6,9 @@
 #include <sys/wait.h>
 #include "memory.h"
 #include "main.h"
+#include "client.h"
+#include "server.h"
+#include "proxy.h"
 
 /* Função que inicia um processo através da função fork do SO. O novo
 * processo pode ser um cliente, proxy, ou servidor, consoante a variável
