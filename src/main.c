@@ -3,12 +3,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include "main.h"
 #include "memory.h"
+#include "memory-private.h"
 #include "synchronization.h"
+#include "process.h"
 
-
-
-//Estrutura que agrega a informação necessária pela main do sovaccines.
 struct main_data {
 	int max_ops;		//número máximo de operações
 	int buffers_size;	//tamanho máximo dos buffers de mem. partilhada
@@ -29,7 +30,6 @@ struct main_data {
 	
 	int* terminate; //flag booleana, valor 1 indica que sovaccines deve terminar a sua execução
 };
-
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de operações, o tamanho dos buffers de memória partilhada
@@ -85,7 +85,22 @@ void create_dynamic_memory_buffers(struct main_data* data) {
 * Para tal, pode ser usada a função create_shared_memory do memory.h.
 */
 void create_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
+	
+	buffers->main_cli->ptr = create_shared_memory(STR_SHM_MAIN_CLI_PTR, (data->buffers_size)*sizeof(int));
+	buffers->main_cli->buffer = create_shared_memory(STR_SHM_MAIN_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
+	
+	buffers->main_cli->ptr = create_shared_memory(STR_SHM_CLI_PRX_PTR , (data->buffers_size)*sizeof(struct pointer));
+	buffers->main_cli->buffer = create_shared_memory(STR_SHM_CLI_PRX_BUFFER, (data->buffers_size)*sizeof(struct operation));
 
+	buffers->main_cli->ptr = create_shared_memory(STR_SHM_PRX_SRV_PTR , (data->buffers_size)*sizeof(int));
+	buffers->main_cli->buffer = create_shared_memory(STR_SHM_PRX_SRV_BUFFER, (data->buffers_size)*sizeof(struct operation));
+
+	buffers->main_cli->ptr = create_shared_memory(STR_SHM_SRV_CLI_PTR , (data->buffers_size)*sizeof(struct pointer));
+	buffers->main_cli->buffer = create_shared_memory(STR_SHM_SRV_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
+		
+	data->results = create_shared_memory( STR_SHM_RESULTS	, (data->buffers_size)*sizeof(int));
+	
+	data->terminate = create_shared_memory(STR_SHM_TERMINATE, (data->buffers_size)*sizeof(int));
 }
 
 /* Função que inicializa os semáforos da estrutura semaphores. Semáforos
@@ -120,15 +135,7 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 
 }
 
-/* Função que faz interação do utilizador com o sistema, podendo receber 4 comandos:
-* op - cria uma nova operação, através da função create_request
-* read - verifica o estado de uma operação através da função read_answer
-* stop - termina o execução do sovaccines através da função stop_execution
-* help - imprime informação sobre os comandos disponiveis
-*/
-void user_interaction(struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) {
 
-}
 
 /* Se o limite de operações ainda não tiver sido atingido, cria uma nova
 * operação identificada pelo valor atual de op_counter, escrevendo a mesma
@@ -218,6 +225,7 @@ void write_statistics(struct main_data* data){
 		printf("SERVER %d recebeu %d pedidos!\n", i, data->server_stats[i]);
 	}
 
+
 }
 
 /* Função que liberta todos os buffers de memória dinâmica previamente
@@ -238,11 +246,76 @@ void destroy_dynamic_memory_buffers(struct main_data* data){
 /* Função que liberta todos os buffers de memória partilhada previamente
 * reservados nas estruturas data e buffers.
 */
-void destroy_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers){}
+void destroy_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers){
+	
+	destroy_shared_memory(STR_SHM_MAIN_CLI_PTR, (data->buffers_size)*sizeof(int));
+	destroy_shared_memory(STR_SHM_MAIN_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
+	
+	destroy_shared_memory(STR_SHM_CLI_PRX_PTR , (data->buffers_size)*sizeof(struct pointer));
+	destroy_shared_memory(STR_SHM_CLI_PRX_BUFFER, (data->buffers_size)*sizeof(struct operation));
+
+	destroy_shared_memory(STR_SHM_PRX_SRV_PTR , (data->buffers_size)*sizeof(int));
+	destroy_shared_memory(STR_SHM_PRX_SRV_BUFFER, (data->buffers_size)*sizeof(struct operation));
+
+	destroy_shared_memory(STR_SHM_SRV_CLI_PTR , (data->buffers_size)*sizeof(struct pointer));
+	destroy_shared_memory(STR_SHM_SRV_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
+		
+	destroy_shared_memory( STR_SHM_RESULTS	, (data->buffers_size)*sizeof(int));
+	
+	destroy_shared_memory(STR_SHM_TERMINATE, (data->buffers_size)*sizeof(int));
+
+}
 
 /* Função que liberta todos os semáforos da estrutura semaphores.
 */
 void destroy_semaphores(struct semaphores* sems){}
+
+/* Função que faz interação do utilizador com o sistema, podendo receber 4 comandos:
+* op - cria uma nova operação, através da função create_request
+* read - verifica o estado de uma operação através da função read_answer
+* stop - termina o execução do sovaccines através da função stop_execution
+* help - imprime informação sobre os comandos disponiveis
+*/
+void user_interaction(struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) {
+	/*
+	//Primeira mensagem a ser impressa
+	printf("Acoes disponiveis: \n");
+	printf("	op - cria uma nova operação, através da função create_request\n");
+	printf("	read - verifica o estado de uma operação através da função read_answer\n");
+	printf("	stop - termina o execução do sovaccines através da função stop_execution\n");
+	printf("	help - imprime informação sobre os comandos disponiveis\n");
+
+	while(data->terminate == 0){
+		char resp[10];
+		printf("Introduzir ação:\n");
+		scanf("%s", resp);
+
+		if(strcmp(resp,"stop") == 0){
+				stop_execution(data, buffers, sems);
+		}else if(strcmp(resp,"help") == 0){
+				printf("Acoes disponiveis: \n");
+				printf("	op - cria uma nova operação, através da função create_request\n");
+				printf("	read - verifica o estado de uma operação através da função read_answer\n");
+				printf("	stop - termina o execução do sovaccines através da função stop_execution\n");
+				printf("	help - imprime informação sobre os comandos disponiveis\n");
+		}else if(strcmp(resp,"por") == 0){
+			if(data->max_ops < (data->results->id)){			//ISTO ESTA MAL
+					printf("O número máximo de pedidos foi alcançado!\n");
+					break;
+				}else{
+//					create_request(..., buffers, data, sems);  //AINDA NAO SEI O QUE É O OP_COUNTER, SERA QUE É O (data->results.id)???????
+				}
+		} else if(strcmp(resp,"read") == 0){		//NESTE CASO É QUANDO É READ, TER CUIDADO QUE A FORMA É "read x"
+			
+			if()
+			read_answer(data, sems);
+		}else{
+			printf("A notação usada não está correta. Use a opção help para verificar as opções\n");
+		}
+		
+	}
+	*/
+}
 
 int main(int argc, char *argv[]) {
 //init data structures
@@ -267,11 +340,11 @@ int main(int argc, char *argv[]) {
 		
 		//execute main code
 		main_args(argc, argv, data);
-		/**
+		
 		create_dynamic_memory_buffers(data);
 		create_shared_memory_buffers(data, buffers);
 		create_semaphores(data, sems);
-		*/
+		
 		launch_processes(buffers, data, sems);
 		//user_interaction(buffers, data, sems);
 

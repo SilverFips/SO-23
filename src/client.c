@@ -16,7 +16,7 @@
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
 
     printf("Cheguei ao filho client");
-
+    return 0;
 
 }
 
