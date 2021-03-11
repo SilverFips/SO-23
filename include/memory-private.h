@@ -9,13 +9,13 @@ struct pointer {
 //estrutura que representa um buffer circular, completar pelos alunos
 struct circular_buffer { 	
     struct pointer* ptr;
-    struct operation* buffer;
+    struct operation* op;
 };
 
 //estrutura que representa um buffer de acesso aleatório, completar pelos alunos
 struct rnd_access_buffer { 		
     int* ptr;
-    struct operation* buffer;
+    struct operation* op;
 };
 
 #endif

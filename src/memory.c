@@ -84,7 +84,12 @@ void destroy_dynamic_memory(void* ptr){
 void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct operation* op){
 	for(int i = 0; i < buffer_size; i++){
 		if(buffer->ptr[i] == 0){
-			buffer->op = op;
+			buffer->op[i].id = op->id;
+			buffer->op[i].status = op->status;
+			buffer->op[i].client = op->client;
+			buffer->op[i].proxy = op->proxy;
+			buffer->op[i].server = op->server;
+			buffer->ptr[i] = 1;
 			break;
 		}
 	}
@@ -97,7 +102,17 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 * nada.
 */
 void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){
-	
+	int pos_in = buffer->ptr->in;
+	int pos_out = buffer->ptr->out;
+
+	while(((pos_in + 1) % buffer_size) == pos_out);
+
+	buffer->op[pos_in].id = op->id;
+	buffer->op[pos_in].status = op->status;
+	buffer->op[pos_in].client = op->client;
+	buffer->op[pos_in].proxy = op->proxy;
+	buffer->op[pos_in].server = op->server;
+	buffer->ptr->in = (pos_in +1) % buffer_size;
 }
 
 
@@ -109,7 +124,12 @@ void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, stru
 void read_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct operation* op){
 	for(int i = 0; i < buffer_size; i++){
 		if(buffer->ptr[i] == 1){
-			
+			op->id = buffer->op[i].id;
+			op->status = buffer->op[i].status;
+			op-> client = buffer->op[i].client;
+			op->proxy = buffer->op[i].proxy;
+			op->server = buffer->op[i].server;
+			buffer->ptr[i] = 0;
 			break;
 		}
 	}
@@ -122,7 +142,21 @@ void read_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, s
 * leitura em buffers circular. Se não houver nenhuma operação disponível,
 * afeta op->id com o valor -1.
 */
-void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){}
+void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){
+
+	int pos_in = buffer->ptr->in;
+	int pos_out = buffer->ptr->out;
+
+	while(pos_in == pos_out);
+
+	op->id = buffer->op[pos_in].id;
+	op->status = buffer->op[pos_in].status;
+	op->client = buffer->op[pos_in].client;
+	op->proxy = buffer->op[pos_in].proxy;
+	op->server = buffer->op[pos_in].server;
+	buffer->ptr->out = (pos_out +1) % buffer_size;
+
+}
 
 
 
