@@ -14,7 +14,8 @@
 */
 int execute_server(int server_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
 
-    printf("Cheguei ao filho server");
+
+    return 1;
 }
 
 

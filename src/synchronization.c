@@ -36,7 +36,9 @@ struct semaphores {
 * value. Pode concatenar o resultado da função getuid() a name, para tornar
 * o nome único para o processo.
 */
-sem_t * semaphore_create(char* name, int value){}
+sem_t * semaphore_create(char* name, int value){
+	return 0;
+}
 
 /* Função que destroi o semáforo passado em argumento.
 */

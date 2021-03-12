@@ -13,10 +13,13 @@ CC = gcc
 vpath %.o $(OBJ_DIR)
 vpath %.h $(INC_DIR)
 
-CFLAGS = -Wall -I $(INC_DIR) -lrt
+CFLAGS = -Wall -I $(INC_DIR) -g
+
+LIBS = -lrt
+
 
 sovaccines : $(OBJETOS)
-	$(CC) $(CFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJETOS)) -o $(BIN_DIR)/$@ 
+	$(CC) $(CFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJETOS)) -o $(BIN_DIR)/$@ $(LIBS)
 
 %.o: $(SRC_DIR)/%.c $($@) 
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<
@@ -25,4 +28,7 @@ clean :
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines
 
 valgrind:
-	valgrind --leak-check=full $(BIN_DIR)/sovaccines
+	valgrind --leak-check=full --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines 10 3 1 1 1
+
+exec:
+	$(BIN_DIR)/sovaccines 10 3 1 1 1

@@ -15,7 +15,7 @@
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
 
-    printf("Cheguei ao filho client");
+
     return 0;
 
 }
@@ -61,3 +61,4 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
 */
 void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){}
 
+// NAO ESQUECER: MMCPY DA OPERATION PARA DENTRO DO RESULT PORQUE VAMOS DAR FREE NO create_request
