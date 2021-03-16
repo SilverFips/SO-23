@@ -219,14 +219,14 @@ void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
 	int servers = data->n_servers;
 
 	for(int i = 0; i < clientes; i++){
-		wait_process(data->client_pids[i]);			
+		data->client_stats[i] = wait_process(data->client_pids[i]);			
 	}
 	for(int i = 0; i < proxies; i++){
-		wait_process(data->proxy_pids[i]);
+		data->proxy_stats[i] = wait_process(data->proxy_pids[i]);
 		
 	}
 	for(int i = 0; i < servers; i++){
-		wait_process(data->server_pids[i]);
+		data->server_stats[i] =wait_process(data->server_pids[i]);
 		
 	}
 }

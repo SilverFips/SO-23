@@ -14,7 +14,13 @@
 * outros métodos auxiliares definidos em client.h. 
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-
+    while(1){
+        client_get_operation();
+        client_process_operation();
+        client_send_operation();
+        client_receive_answer();
+        client_process_answer();
+    }
 
     return 0;
 
@@ -27,7 +33,15 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 * a operação, deve verificar se data->terminate tem valor 1. Em caso 
 * afirmativo, retorna imediatamente da função.
 */
-void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
+void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+
+    consume_begin(sems->main_cli);
+    semaphore_mutex_lock(sems->main_cli->mutex);
+    read_rnd_access_buffer(buffers->main_cli, data->buffers_size, op);
+    semaphore_mutex_unlock(sems->main_cli->mutex);
+    consume_end(sems->main_cli);
+
+}
 
 
 /* Função que processa uma operação, alterando o seu campo cliente para o id
