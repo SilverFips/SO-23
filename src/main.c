@@ -60,7 +60,7 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 * igual ao tamanho dos buffers de memória partilhada, e os *_mutex com valor
 * igual a 1. Para tal pode ser usada a função semaphore_create.
 */
-void create_semaphores(struct main_data* data, struct semaphores* sems){
+void create_semaphores(struct main_data* data, struct semaphores* sems){		//NAO ESTA ACABADO
 
 }
 
@@ -95,7 +95,7 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 * necessária sincronização antes e depois de escrever. Imprime o id da
 * operação e incrementa o contador de operações op_counter.
 */
-void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) {
+void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) { //NAO ESTA ACABDO
 
 	struct operation* op = malloc(sizeof(struct operation));
 	op-> id = (*op_counter);			//SERA QUE TENHO DE FAZER MALLOC?
@@ -119,8 +119,17 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 * data->results deve ser sincronizado com as funções e semáforos
 * respetivos.
 */
-void read_answer(struct main_data* data, struct semaphores* sems) {
+void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA ACABADO
 
+	int i = 0;  		//ISTO É SO UMA VARIAVEL DE TESTE PERGUNTAR SE NA FUNCAO NAO DEVAI RECEBER UM ARGUMENTO COM INT
+	char status = data->results[i].status;
+	int client =  data->results[i].client;
+	int proxy = data->results[i].proxy;
+	int server = data->results[i].server;
+
+	// NÃO ESQUECER QUE AINDA FALTA FAZER A SINCRONIZACAO
+
+	printf("Op %d com estado %c foi recebida pelo cliente %d, encaminhada pelo proxu %d, e tratada pelo servido %d!\n", i, status, client, proxy, server);
 }
 
 /* Função que termina a execução do programa sovaccines. Deve começar por 
@@ -130,7 +139,26 @@ void read_answer(struct main_data* data, struct semaphores* sems) {
 * os semáforos e zonas de memória partilhada e dinâmica previamente 
 *reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
-void stop_execution(struct main_data* data, struct communication_buffers* buffers, struct semaphores* sems){
+void stop_execution(struct main_data* data, struct communication_buffers* buffers, struct semaphores* sems){  //NAO ESTA ACABADO
+	*(data->terminate) = 1;
+	wakeup_processes(data, sems);
+	wait_processes(data);
+	write_statistics(data);
+
+	destroy_shared_memory_buffers(data, buffers);
+	destroy_dynamic_memory_buffers(data);
+	
+	destroy_dynamic_memory(data);
+	destroy_dynamic_memory(buffers->main_cli);
+	destroy_dynamic_memory(buffers->cli_prx);
+	destroy_dynamic_memory(buffers->prx_srv);
+	destroy_dynamic_memory(buffers->srv_cli);
+	destroy_dynamic_memory(buffers);
+	destroy_dynamic_memory(sems->main_cli);
+	destroy_dynamic_memory(sems->cli_prx);
+	destroy_dynamic_memory(sems->prx_srv);
+	destroy_dynamic_memory(sems->srv_cli);
+	destroy_dynamic_memory(sems);
 
 }
 
@@ -140,7 +168,14 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 * onde possam estar processos adormecidos e um número de vezes igual ao 
 * máximo de processos que possam lá estar.
 */
-void wakeup_processes(struct main_data* data, struct semaphores* sems){}
+void wakeup_processes(struct main_data* data, struct semaphores* sems){			//NÃO ESTA ACABADO
+
+	produce_end(sems->main_cli);
+	produce_end(sems->cli_prx);
+	produce_end(sems->prx_srv);
+	produce_end(sems->srv_cli);
+
+}
 
 /* Função que espera que todos os processos previamente iniciados terminem,
 * incluindo clientes, proxies e servidores. Para tal, pode usar a função 
@@ -156,41 +191,37 @@ void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
 	int servers = data->n_servers;
 
 	for(int i = 0; i < clientes; i++){
-		wait_process(data->client_pids[i]);					//Ver para onde se mete o retorno do wait_process (int)
-		data->client_stats[i] += 1;
+		wait_process(data->client_pids[i]);			
 	}
 	for(int i = 0; i < proxies; i++){
 		wait_process(data->proxy_pids[i]);
-		data->proxy_stats[i] += 1;
+		
 	}
 	for(int i = 0; i < servers; i++){
 		wait_process(data->server_pids[i]);
-		data->server_stats[i] += 1;
+		
 	}
 }
-
 
 /* Função que imprime as estatisticas finais do sovaccines, nomeadamente quantas
 * operações foram processadas por cada cliente, proxy e servidor.
 */
 void write_statistics(struct main_data* data){
-	printf("Terminando o sovaccines! Imprimindo estatisticas:\n");
-	
+	printf("Terminando o sovaccines! Imprimindo estatísticas:\n");
+
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
 	int servers = data->n_servers;
 
-	for(int i = 0; i < clientes; i++){
-		printf("CLIENTE %d recebeu %d pedidos!\n", i, data->client_stats[i]);
+	for(int i = 0; i < clientes; i++){					
+		printf("Client %d recebeu %d pedidos!\n",i ,data->client_stats[i]);
 	}
 	for(int i = 0; i < proxies; i++){
-		printf("PROXY %d recebeu %d pedidos!\n", i, data->proxy_stats[i]);
+		printf("Proxy %d recebeu %d pedidos!\n",i ,data->proxy_stats[i]);
 	}
 	for(int i = 0; i < servers; i++){
-		printf("SERVER %d recebeu %d pedidos!\n", i, data->server_stats[i]);
+		printf("Server %d recebeu %d pedidos!\n",i ,data->server_stats[i]);
 	}
-
-
 }
 
 /* Função que liberta todos os buffers de memória dinâmica previamente
@@ -216,7 +247,7 @@ void destroy_shared_memory_buffers(struct main_data* data, struct communication_
 	destroy_shared_memory(STR_SHM_MAIN_CLI_PTR,buffers->main_cli->ptr, (data->buffers_size)*sizeof(int));
 	destroy_shared_memory(STR_SHM_MAIN_CLI_BUFFER, buffers->main_cli->op, (data->buffers_size)*sizeof(struct operation));
 	
-	destroy_shared_memory(STR_SHM_CLI_PRX_PTR, buffers->cli_prx->ptr, (data->buffers_size)*sizeof(struct pointer));
+	destroy_shared_memory(STR_SHM_CLI_PRX_PTR, buffers->cliMUITO PROVAVEL ESTAR MAL_prx->ptr, (data->buffers_size)*sizeof(struct pointer));
 	destroy_shared_memory(STR_SHM_CLI_PRX_BUFFER, buffers->cli_prx->op,(data->buffers_size)*sizeof(struct operation));
 
 	destroy_shared_memory(STR_SHM_PRX_SRV_PTR, buffers->prx_srv->ptr, (data->buffers_size)*sizeof(int));
@@ -225,15 +256,14 @@ void destroy_shared_memory_buffers(struct main_data* data, struct communication_
 	destroy_shared_memory(STR_SHM_SRV_CLI_PTR ,buffers->srv_cli->ptr, (data->buffers_size)*sizeof(struct pointer));
 	destroy_shared_memory(STR_SHM_SRV_CLI_BUFFER,buffers->srv_cli->op, (data->buffers_size)*sizeof(struct operation));
 		
-	destroy_shared_memory( STR_SHM_RESULTS, data->results, (data->buffers_size)*sizeof(int));
+	destroy_shared_memory( STR_SHM_RESULTS, data->results, (data->max_ops)*sizeof(struct operation));
 	
-	destroy_shared_memory(STR_SHM_TERMINATE, data->terminate, (data->buffers_size)*sizeof(int));
-
+	destroy_shared_memory(STR_SHM_TERMINATE, data->terminate, sizeof(int));
 }
 
 /* Função que liberta todos os semáforos da estrutura semaphores.
 */
-void destroy_semaphores(struct semaphores* sems){}
+void destroy_semaphores(struct semaphores* sems){}			//NAO ESTA ACABADO
 
 /* Função que faz interação do utilizador com o sistema, podendo receber 4 comandos:
 * op - cria uma nova operação, através da função create_request
@@ -251,14 +281,17 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	printf("	help - imprime informação sobre as ações disponiveis\n");
 
 	int* p = malloc(sizeof(int));
+	int end = 0;
 
-	while(*(data->terminate) != 1){
+	while(end != 1){
 		char resp[10];
 		printf("Introduzir ação:\n");
 		scanf("%[^\n]%*c", resp);
 
 		if(strcmp(resp,"stop") == 0){
 				stop_execution(data, buffers, sems);
+				end = 1;
+				free(p);
 		}else if(strcmp(resp,"help") == 0){
 				printf("Ações disponiveis: \n");
 				printf("	op - criar um pedido de aquisição de vacinas\n");
@@ -294,7 +327,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 			printf("Ação não reconhecida, insira 'help' para assistência.\n");
 		}
 	}
-	free(p);
+
 	
 }
 /* Função que lê os argumentos da aplicação, nomeadamente o número
@@ -356,22 +389,6 @@ int main(int argc, char *argv[]) {
 		launch_processes(buffers, data, sems);
 		user_interaction(buffers, data, sems);
 
-		
-		//release final memory
-		destroy_shared_memory_buffers(data, buffers);
-		destroy_dynamic_memory_buffers(data);
-		
-		destroy_dynamic_memory(data);
-		destroy_dynamic_memory(buffers->main_cli);
-		destroy_dynamic_memory(buffers->cli_prx);
-		destroy_dynamic_memory(buffers->prx_srv);
-		destroy_dynamic_memory(buffers->srv_cli);
-		destroy_dynamic_memory(buffers);
-		destroy_dynamic_memory(sems->main_cli);
-		destroy_dynamic_memory(sems->cli_prx);
-		destroy_dynamic_memory(sems->prx_srv);
-		destroy_dynamic_memory(sems->srv_cli);
-		destroy_dynamic_memory(sems);
 		
 	}
 

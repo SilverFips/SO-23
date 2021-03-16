@@ -56,7 +56,7 @@ void destroy_shared_memory(char* name, void* ptr, int size){
 	int ret;
 	char name_fd[50];
 	sprintf(name_fd,"/%s_%d", name, getuid());
-	ret = munmap(ptr, sizeof(int)); 
+	ret = munmap(ptr, size); 
 	if (ret == -1){ 
 		perror("exit7"); 
 		exit(7); 
