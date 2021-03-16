@@ -61,7 +61,23 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 * igual a 1. Para tal pode ser usada a função semaphore_create.
 */
 void create_semaphores(struct main_data* data, struct semaphores* sems){		//NAO ESTA ACABADO
+	sems->main_cli->full = semaphore_create(STR_SEM_MAIN_CLI_FULL, 0);
+	sems->main_cli->empty = semaphore_create(STR_SEM_MAIN_CLI_EMPTY , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->main_cli->mutex = semaphore_create(STR_SEM_MAIN_CLI_MUTEX, 1);
 
+	sems->cli_prx->full = semaphore_create(STR_SEM_CLI_PRX_FULL, 0);
+	sems->cli_prx->empty = semaphore_create(STR_SEM_CLI_PRX_EMPTY , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->cli_prx->mutex = semaphore_create(STR_SEM_CLI_PRX_MUTEX, 1);
+
+	sems->prx_srv->full = semaphore_create(STR_SEM_PRX_SRV_FULL, 0);
+	sems->prx_srv->empty = semaphore_create(STR_SEM_PRX_SRV_EMPTY , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->prx_srv->mutex = semaphore_create(STR_SEM_PRX_SRV_MUTEX, 1);
+
+	sems->srv_cli->full = semaphore_create(STR_SEM_SRV_CLI_FULL, 0);
+	sems->srv_cli->empty = semaphore_create(STR_SEM_SRV_CLI_EMPTY  , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->srv_cli->mutex = semaphore_create(STR_SEM_SRV_CLI_MUTEX , 1);
+
+	sems->results_mutex = semaphore_create(STR_SEM_RESULTS_MUTEX , 1);
 }
 
 /* Função que inicia os processos dos clientes, proxies e
@@ -98,17 +114,18 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) { //NAO ESTA ACABDO
 
 	struct operation* op = malloc(sizeof(struct operation));
-	op-> id = (*op_counter);			//SERA QUE TENHO DE FAZER MALLOC?
+	op-> id = (*op_counter);									//SERA QUE TENHO DE FAZER MALLOC?
 	op->status = ' ';
 	op->client = 0;
 	op->proxy = 0;
 	op->server = 0;
 
-	//FALTA A SINCRONIZAÇÃO
-
+																//FALTA A SINCRONIZAÇÃO
+	produce_begin(sems->main_cli);
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
-
+	produce_end(sems->main_cli);
 	free(op);
+	printf("A op %d foi realizada com sucesso.\n", *op_counter);
 	(*op_counter)++;
 }
 
@@ -120,15 +137,25 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 * respetivos.
 */
 void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA ACABADO
+			// O read vem na forma de "read_x" sendo x o op pretendido, entao temos que o obter
+	int i; 
+	scanf("%d", &i);
 
-	int i = 0;  		//ISTO É SO UMA VARIAVEL DE TESTE PERGUNTAR SE NA FUNCAO NAO DEVAI RECEBER UM ARGUMENTO COM INT
+	semaphore_mutex_lock(sems->results_mutex);
 	char status = data->results[i].status;
+
+	if(status != 'S'){
+		printf("A op %d, ainda não esta realizada.\n", i);
+		return;
+	}
+	 		//ISTO É SO UMA VARIAVEL DE TESTE PERGUNTAR SE NA FUNCAO NAO DEVAI RECEBER UM ARGUMENTO COM INT
+	
 	int client =  data->results[i].client;
 	int proxy = data->results[i].proxy;
 	int server = data->results[i].server;
 
 	// NÃO ESQUECER QUE AINDA FALTA FAZER A SINCRONIZACAO
-
+	semaphore_mutex_unlock(sems->results_mutex);
 	printf("Op %d com estado %c foi recebida pelo cliente %d, encaminhada pelo proxu %d, e tratada pelo servido %d!\n", i, status, client, proxy, server);
 }
 
@@ -145,6 +172,7 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 	wait_processes(data);
 	write_statistics(data);
 
+	destroy_semaphores(sems);
 	destroy_shared_memory_buffers(data, buffers);
 	destroy_dynamic_memory_buffers(data);
 	
@@ -247,7 +275,7 @@ void destroy_shared_memory_buffers(struct main_data* data, struct communication_
 	destroy_shared_memory(STR_SHM_MAIN_CLI_PTR,buffers->main_cli->ptr, (data->buffers_size)*sizeof(int));
 	destroy_shared_memory(STR_SHM_MAIN_CLI_BUFFER, buffers->main_cli->op, (data->buffers_size)*sizeof(struct operation));
 	
-	destroy_shared_memory(STR_SHM_CLI_PRX_PTR, buffers->cliMUITO PROVAVEL ESTAR MAL_prx->ptr, (data->buffers_size)*sizeof(struct pointer));
+	destroy_shared_memory(STR_SHM_CLI_PRX_PTR, buffers->cli_prx->ptr, (data->buffers_size)*sizeof(struct pointer));
 	destroy_shared_memory(STR_SHM_CLI_PRX_BUFFER, buffers->cli_prx->op,(data->buffers_size)*sizeof(struct operation));
 
 	destroy_shared_memory(STR_SHM_PRX_SRV_PTR, buffers->prx_srv->ptr, (data->buffers_size)*sizeof(int));
@@ -263,7 +291,26 @@ void destroy_shared_memory_buffers(struct main_data* data, struct communication_
 
 /* Função que liberta todos os semáforos da estrutura semaphores.
 */
-void destroy_semaphores(struct semaphores* sems){}			//NAO ESTA ACABADO
+void destroy_semaphores(struct semaphores* sems){							//NAO ESTA ACABADO
+	semaphore_destroy(STR_SEM_MAIN_CLI_FULL, sems->main_cli->full);
+	semaphore_destroy(STR_SEM_MAIN_CLI_EMPTY, sems->main_cli->empty);
+	semaphore_destroy(STR_SEM_MAIN_CLI_MUTEX, sems->main_cli->mutex);
+
+	semaphore_destroy(STR_SEM_CLI_PRX_FULL, sems->cli_prx->full);
+	semaphore_destroy(STR_SEM_CLI_PRX_EMPTY, sems->cli_prx->empty);
+	semaphore_destroy(STR_SEM_CLI_PRX_MUTEX, sems->cli_prx->mutex);
+
+	semaphore_destroy(STR_SEM_PRX_SRV_FULL, sems->prx_srv->full);
+	semaphore_destroy(STR_SEM_PRX_SRV_EMPTY, sems->prx_srv->empty);
+	semaphore_destroy(STR_SEM_PRX_SRV_MUTEX, sems->prx_srv->mutex);
+
+	semaphore_destroy(STR_SEM_SRV_CLI_FULL, sems->srv_cli->full);
+	semaphore_destroy(STR_SEM_SRV_CLI_EMPTY, sems->srv_cli->empty);
+	semaphore_destroy(STR_SEM_SRV_CLI_MUTEX, sems->srv_cli->mutex);
+
+	semaphore_destroy(STR_SEM_RESULTS_MUTEX, sems->results_mutex);
+
+}			
 
 /* Função que faz interação do utilizador com o sistema, podendo receber 4 comandos:
 * op - cria uma nova operação, através da função create_request
@@ -286,7 +333,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	while(end != 1){
 		char resp[10];
 		printf("Introduzir ação:\n");
-		scanf("%[^\n]%*c", resp);
+		scanf("%s", resp);
 
 		if(strcmp(resp,"stop") == 0){
 				stop_execution(data, buffers, sems);
@@ -305,24 +352,8 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 				}else{
 					create_request(p, buffers, data, sems); 
 				}
-		} else if(strcmp(resp,"read") == 32){
-			// O read vem na forma de "read_x" sendo x o op pretendido, entao temos que o obter
-			int pos = 5;
-			int pos2 = 0;
-			char arr2 [100];
-			while(resp[pos] != '\0'){
-				arr2[pos2] = resp[pos];
-				pos2++;
-				pos++;
-			}
-			int i = atoi(arr2); // op pretendido
-			
-
-			if(i > (*p) || (*p) == 0){		// Verificar se o valor op dado é maior que o counter que temos
-				printf("Op %d ainda não é válido!\n",i);
-			}else{
+		} else if(strcmp(resp,"read") == 0){
 				read_answer(data, sems);
-			}
 		}else{
 			printf("Ação não reconhecida, insira 'help' para assistência.\n");
 		}
