@@ -14,15 +14,27 @@
 * outros métodos auxiliares definidos em client.h. 
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+    int* count = malloc(sizeof(int));
     while(1){
-        client_get_operation();
-        client_process_operation();
-        client_send_operation();
-        client_receive_answer();
-        client_process_answer();
+        struct operation* op = malloc(sizeof(struct operation));
+        client_get_operation(op, buffers, data, sems);
+        if(op->id != -1 & data->terminate == 0){
+            client_process_operation(op, client_id, count);
+            client_send_operation(op, buffers, data, sems);
+        }
+        
+        client_receive_answer(op, buffers, data,sems);
+        if(op->id != -1 & data->terminate == 0){
+            client_process_answer(op, data, sems);
+        }
+        free(op);
+        if(data->terminate == 1){
+            break;
+        }
     }
-
-    return 0;
+    int i = (*count);
+    free(count);
+    return i;
 
 }
 
@@ -37,6 +49,9 @@ void client_get_operation(struct operation* op, struct communication_buffers* bu
 
     consume_begin(sems->main_cli);
     semaphore_mutex_lock(sems->main_cli->mutex);
+    if((*data->terminate) == 1){
+        return;
+    }
     read_rnd_access_buffer(buffers->main_cli, data->buffers_size, op);
     semaphore_mutex_unlock(sems->main_cli->mutex);
     consume_end(sems->main_cli);
@@ -48,14 +63,27 @@ void client_get_operation(struct operation* op, struct communication_buffers* bu
 * passado como argumento, alterando o estado da mesma para 'C' (client), e 
 * incrementando o contador de operações.
 */
-void client_process_operation(struct operation* op, int cient_id, int* counter){}
+void client_process_operation(struct operation* op, int cient_id, int* counter){
+    op->status = 'C';
+    op->client = cient_id;
+    (*counter)++;
+}
 
 
 /* Função que escreve uma operação no buffer de memória partilhada entre
 * clientes e proxies, efetuando a necessária sincronização antes e depois
 * de escrever.
 */
-void client_send_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
+void client_send_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+
+    produce_begin(sems->cli_prx);
+    semaphore_mutex_lock(sems->cli_prx->mutex);
+    write_circular_buffer(buffers->cli_prx, data->buffers_size, op);
+    semaphore_mutex_unlock(sems->cli_prx->mutex);
+    consume_end(sems->cli_prx);
+
+
+}
 
 
 /* Função que lê uma operação do buffer de memória partilhada entre 
@@ -64,7 +92,16 @@ void client_send_operation(struct operation* op, struct communication_buffers* b
 * tentar ler a operação, deve verificar se data->terminate tem valor 1.
 * Em caso afirmativo, retorna imediatamente da função.
 */
-void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
+void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+    consume_begin(sems->srv_cli);
+    semaphore_mutex_lock(sems->srv_cli->mutex);
+    if((*data->terminate) != 1){
+        return;
+    }
+    read_circular_buffer(buffers->srv_cli, data->buffers_size, op);
+    semaphore_mutex_unlock(sems->srv_cli->mutex);
+    consume_end(sems->srv_cli);
+}
 
 
 /* Função que guarda uma operação no array de operações finalizadas da
@@ -73,6 +110,16 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
 * Imprime também uma mensagem para o terminal a avisar que a operação 
 * terminou.
 */
-void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){}
+void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){
+    int id = op->id;
+    semaphore_mutex_lock(sems->results_mutex);
+    data->results[id].id = op->id;
+    data->results[id].status = op->status;
+    data->results[id].client = op->client;
+    data->results[id].proxy = op->proxy;
+    data->results[id].server = op->server;
+
+    semaphore_mutex_unlock(sems->results_mutex);
+}
 
 // NAO ESQUECER: MMCPY DA OPERATION PARA DENTRO DO RESULT PORQUE VAMOS DAR FREE NO create_request
