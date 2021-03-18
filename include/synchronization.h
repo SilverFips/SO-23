@@ -38,6 +38,7 @@ struct semaphores {
 * o nome único para o processo.
 */
 sem_t * semaphore_create(char* name, int value);
+	
 
 /* Função que destroi o semáforo passado em argumento.
 */

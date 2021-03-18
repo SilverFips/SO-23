@@ -15,7 +15,7 @@ vpath %.h $(INC_DIR)
 
 CFLAGS = -Wall -I $(INC_DIR) -g
 
-LIBS = -lrt
+LIBS = -lrt -lpthread
 
 
 sovaccines : $(OBJETOS)
