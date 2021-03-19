@@ -19,6 +19,7 @@ void* create_shared_memory(char* name, int size){
 	char name_fd[50];
 	int ret;
 	sprintf(name_fd,"/%s_%d", name, getuid());
+	printf("%s\n", name_fd);
 	int fd = shm_open(name_fd, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd == -1){ 
 		perror("shm"); 

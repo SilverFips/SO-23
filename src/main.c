@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 
 #include "main.h"
 #include "memory.h"
@@ -175,7 +177,7 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 	wakeup_processes(data, sems);
 	
 	wait_processes(data);
-	
+	printf("wait_process\n");
 	write_statistics(data);
 	
 	destroy_semaphores(sems);
@@ -402,7 +404,31 @@ int main(int argc, char *argv[]) {
 		perror("Nao foram dados parametros suficientes.");
         exit(1);
 	}else{
-		
+		shm_unlink("/SHM_MAIN_CLI_PTR_1000");
+		shm_unlink("/SHM_MAIN_CLI_BUFFER_1000");
+		shm_unlink("/SHM_CLI_PRX_PTR_1000");
+		shm_unlink("/SHM_CLI_PRX_BUFFER_1000");
+		shm_unlink("/SHM_PRX_SRV_PTR_1000");
+		shm_unlink("/SHM_PRX_SRV_BUFFER_1000");
+		shm_unlink("/SHM_SRV_CLI_PTR_1000");
+		shm_unlink("/SHM_SRV_CLI_BUFFER_1000");
+		shm_unlink("/SHM_RESULTS_1000");
+		shm_unlink("/SHM_TERMINATE_1000");
+
+		sem_unlink("sem_main_cli_full_1000");
+		sem_unlink("sem_main_cli_empty_1000");
+		sem_unlink("sem_main_cli_mutex_1000");
+		sem_unlink("sem_cli_prx_full_1000");
+		sem_unlink("sem_cli_prx_empty_1000");
+		sem_unlink("sem_cli_prx_mutex_1000");
+		sem_unlink("sem_prx_srv_full_1000");
+		sem_unlink("sem_prx_srv_empty_1000");
+		sem_unlink("sem_prx_srv_mutex_1000");
+		sem_unlink("sem_srv_cli_full_1000");
+		sem_unlink("sem_srv_cli_empty_1000");
+		sem_unlink("sem_srv_cli_mutex_1000");
+		sem_unlink("sem_results_mutex_1000");
+
 		
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
 		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
