@@ -104,19 +104,12 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 * nada.
 */
 void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){
-	printf("entrou no write_circular\n");
-
 	int pos_in = buffer->ptr->in;
-	
-	printf("pos_in: %d\n", pos_in);
 	int pos_out = buffer->ptr->out;
-	printf("enters_while\n");
+
 	while(((pos_in + 1) % buffer_size) == pos_out);
-	printf("exits_while\n");
-	printf("middle %d\n", op->id);
-	printf("middle %d\n", buffer->op[pos_in].id);
 	buffer->op[pos_in].id = op->id;
-	printf("middle\n");
+	
 	buffer->op[pos_in].status = op->status;
 	buffer->op[pos_in].client = op->client;
 	
@@ -124,7 +117,7 @@ void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, stru
 	buffer->op[pos_in].server = op->server;
 	buffer->ptr->in = (pos_in +1) % buffer_size;
 
-	printf("write_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
+	//printf("write_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
 }
 
 
@@ -147,7 +140,7 @@ void read_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, s
 			op->server = buffer->op[i].server;
 			buffer->op[i].server = 0;
 			buffer->ptr[i] = 0;
-			printf("read_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
+			
 			return;
 		}
 	}
