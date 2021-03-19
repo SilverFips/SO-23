@@ -138,11 +138,14 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 * respetivos.
 */
 void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA ACABADO
-			// O read vem na forma de "read_x" sendo x o op pretendido, entao temos que o obter
+				
+	// char a[10];
+	// scanf("%s",a);
+	// int i = atoi(a);
 	
-	char a[10];
-	scanf("%s",a);
-	int i = atoi(a);
+	int i;
+	printf("Qual a operação pretendida? (valor máximo é %d)\n", data->max_ops);
+	scanf("%d", &i);
 
 	semaphore_mutex_lock(sems->results_mutex);
 	char status = data->results[i].status;
