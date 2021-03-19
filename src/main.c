@@ -39,14 +39,14 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 	buffers->main_cli->ptr = create_shared_memory(STR_SHM_MAIN_CLI_PTR, (data->buffers_size)*sizeof(int));
 	buffers->main_cli->op = create_shared_memory(STR_SHM_MAIN_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
 	
-	buffers->main_cli->ptr = create_shared_memory(STR_SHM_CLI_PRX_PTR , (data->buffers_size)*sizeof(struct pointer));
-	buffers->main_cli->op = create_shared_memory(STR_SHM_CLI_PRX_BUFFER, (data->buffers_size)*sizeof(struct operation));
+	buffers->cli_prx->ptr = create_shared_memory(STR_SHM_CLI_PRX_PTR , sizeof(struct pointer));
+	buffers->cli_prx->op = create_shared_memory(STR_SHM_CLI_PRX_BUFFER, (data->buffers_size)*sizeof(struct operation));
 
-	buffers->main_cli->ptr = create_shared_memory(STR_SHM_PRX_SRV_PTR , (data->buffers_size)*sizeof(int));
-	buffers->main_cli->op = create_shared_memory(STR_SHM_PRX_SRV_BUFFER, (data->buffers_size)*sizeof(struct operation));
+	buffers->prx_srv->ptr = create_shared_memory(STR_SHM_PRX_SRV_PTR , (data->buffers_size)*sizeof(int));
+	buffers->prx_srv->op = create_shared_memory(STR_SHM_PRX_SRV_BUFFER, (data->buffers_size)*sizeof(struct operation));
 
-	buffers->main_cli->ptr = create_shared_memory(STR_SHM_SRV_CLI_PTR , (data->buffers_size)*sizeof(struct pointer));
-	buffers->main_cli->op = create_shared_memory(STR_SHM_SRV_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
+	buffers->srv_cli->ptr = create_shared_memory(STR_SHM_SRV_CLI_PTR , sizeof(struct pointer));
+	buffers->srv_cli->op = create_shared_memory(STR_SHM_SRV_CLI_BUFFER, (data->buffers_size)*sizeof(struct operation));
 		
 	data->results = create_shared_memory( STR_SHM_RESULTS	, (data->max_ops)*sizeof(struct operation));
 	
@@ -119,9 +119,9 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	op->client = 0;
 	op->proxy = 0;
 	op->server = 0;
-
 																//FALTA A SINCRONIZAÇÃO
 	produce_begin(sems->main_cli);
+	printf("write_main\n");
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
 	produce_end(sems->main_cli);
 	free(op);
@@ -138,9 +138,12 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 */
 void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA ACABADO
 			// O read vem na forma de "read_x" sendo x o op pretendido, entao temos que o obter
-	int i; 
-	scanf("%d", &i);
+	
+	char a[10];
+	scanf("%s",a);
+	int i = atoi(a);
 
+	printf("%d\n", i);
 	semaphore_mutex_lock(sems->results_mutex);
 	char status = data->results[i].status;
 
@@ -168,10 +171,13 @@ void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA 
 */
 void stop_execution(struct main_data* data, struct communication_buffers* buffers, struct semaphores* sems){  //NAO ESTA ACABADO
 	*(data->terminate) = 1;
+	
 	wakeup_processes(data, sems);
+	
 	wait_processes(data);
+	
 	write_statistics(data);
-
+	
 	destroy_semaphores(sems);
 	destroy_shared_memory_buffers(data, buffers);
 	destroy_dynamic_memory_buffers(data);
@@ -217,7 +223,6 @@ void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
 	int servers = data->n_servers;
-
 	for(int i = 0; i < clientes; i++){
 		data->client_stats[i] = wait_process(data->client_pids[i]);			
 	}
@@ -353,6 +358,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 					create_request(p, buffers, data, sems); 
 				}
 		} else if(strcmp(resp,"read") == 0){
+			
 				read_answer(data, sems);
 		}else{
 			printf("Ação não reconhecida, insira 'help' para assistência.\n");

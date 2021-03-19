@@ -2,6 +2,8 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include "synchronization.h"
 
 /* Função que cria um novo semáforo com nome name e valor inicial igual a
@@ -13,7 +15,7 @@ sem_t * semaphore_create(char* name, int value){
 	char name_fd[50];
 	
 	sprintf(name_fd,"%s_%d", name, getuid());
-	printf( "\n nome semaforo_create: %s\n", name_fd);
+	//printf( "\n nome semaforo_create: %s\n", name_fd);
 	sem_t* sem = sem_open(name_fd, O_CREAT, 0xFFFFFFFF, value);
 	if (sem == SEM_FAILED)
  		perror(name);

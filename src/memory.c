@@ -24,17 +24,18 @@ void* create_shared_memory(char* name, int size){
 		perror("shm"); 
 		exit(1); 
 	}
-	ret = ftruncate(fd, size);
+	ret = ftruncate(fd, size);							//DEFINICAO DO TAMANHO DO FICHEIRO
 	if (ret == -1){ 
 		perror("shm"); 
 		exit(2); 
 	}
-	int* ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	int* ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);		//PROJECAO DA MEMORIA PARTILHADA
 	if (ptr == MAP_FAILED){ 
 		perror("shm-mmap"); 
 		exit(3); 
 	}
-	return ptr;
+	
+	return memset(ptr, 0, size);
 
 	//Preencher com o valor 0 
 }
@@ -93,6 +94,7 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 			break;
 		}
 	}
+	printf("write_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
 }
 
 
@@ -102,17 +104,27 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 * nada.
 */
 void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){
+	printf("entrou no write_circular\n");
+
 	int pos_in = buffer->ptr->in;
+	
+	printf("pos_in: %d\n", pos_in);
 	int pos_out = buffer->ptr->out;
-
+	printf("enters_while\n");
 	while(((pos_in + 1) % buffer_size) == pos_out);
-
+	printf("exits_while\n");
+	printf("middle %d\n", op->id);
+	printf("middle %d\n", buffer->op[pos_in].id);
 	buffer->op[pos_in].id = op->id;
+	printf("middle\n");
 	buffer->op[pos_in].status = op->status;
 	buffer->op[pos_in].client = op->client;
+	
 	buffer->op[pos_in].proxy = op->proxy;
 	buffer->op[pos_in].server = op->server;
 	buffer->ptr->in = (pos_in +1) % buffer_size;
+
+	printf("write_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
 }
 
 
@@ -125,15 +137,21 @@ void read_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, s
 	for(int i = 0; i < buffer_size; i++){
 		if(buffer->ptr[i] == 1){
 			op->id = buffer->op[i].id;
+			buffer->op[i].id = 0;
 			op->status = buffer->op[i].status;
+			buffer->op[i].status = ' ';
 			op-> client = buffer->op[i].client;
+			buffer->op[i].client = 0;
 			op->proxy = buffer->op[i].proxy;
+			buffer->op[i].proxy = 0;
 			op->server = buffer->op[i].server;
+			buffer->op[i].server = 0;
 			buffer->ptr[i] = 0;
-			break;
+			printf("read_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
+			return;
 		}
 	}
-	buffer->op->id = -1;
+	op->id = -1;
 }
 
 
@@ -150,12 +168,18 @@ void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struc
 	while(pos_in == pos_out);
 
 	op->id = buffer->op[pos_in].id;
+	buffer->op[pos_in].id = 0;
 	op->status = buffer->op[pos_in].status;
+	buffer->op[pos_in].status = ' ';
 	op->client = buffer->op[pos_in].client;
+	buffer->op[pos_in].client = 0;
 	op->proxy = buffer->op[pos_in].proxy;
+	buffer->op[pos_in].proxy = 0;
 	op->server = buffer->op[pos_in].server;
+	buffer->op[pos_in].server = 0;
 	buffer->ptr->out = (pos_out +1) % buffer_size;
 
+	printf("read_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
 }
 
 

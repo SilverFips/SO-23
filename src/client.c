@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "memory.h"
 #include "main.h"
+#include "client.h"
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito
 * onde cada iteração do ciclo tem dois passos: primeiro, lê uma operação
@@ -15,25 +17,28 @@
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     int* count = malloc(sizeof(int));
+    struct operation* op = malloc(sizeof(struct operation));
     while(1){
-        struct operation* op = malloc(sizeof(struct operation));
+        
         client_get_operation(op, buffers, data, sems);
-        if(op->id != -1 & data->terminate == 0){
+        if((op->id != -1) & (*(data->terminate) == 0)){
             client_process_operation(op, client_id, count);
             client_send_operation(op, buffers, data, sems);
         }
-        
+       
         client_receive_answer(op, buffers, data,sems);
-        if(op->id != -1 & data->terminate == 0){
+        if((op->id != -1) & (*(data->terminate) == 0)){
             client_process_answer(op, data, sems);
         }
-        free(op);
-        if(data->terminate == 1){
+        
+        if(*(data->terminate) == 1){
             break;
         }
     }
+    free(op);
     int i = (*count);
     free(count);
+    //exit(i);
     return i;
 
 }
@@ -46,7 +51,7 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 * afirmativo, retorna imediatamente da função.
 */
 void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-
+    printf("get_operation_client\n");
     consume_begin(sems->main_cli);
     semaphore_mutex_lock(sems->main_cli->mutex);
     if((*data->terminate) == 1){
@@ -64,6 +69,7 @@ void client_get_operation(struct operation* op, struct communication_buffers* bu
 * incrementando o contador de operações.
 */
 void client_process_operation(struct operation* op, int cient_id, int* counter){
+    printf("client_process_operation_client\n");
     op->status = 'C';
     op->client = cient_id;
     (*counter)++;
@@ -75,7 +81,7 @@ void client_process_operation(struct operation* op, int cient_id, int* counter){
 * de escrever.
 */
 void client_send_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-
+    printf("client_send_operation_client\n");
     produce_begin(sems->cli_prx);
     semaphore_mutex_lock(sems->cli_prx->mutex);
     write_circular_buffer(buffers->cli_prx, data->buffers_size, op);
@@ -93,6 +99,7 @@ void client_send_operation(struct operation* op, struct communication_buffers* b
 * Em caso afirmativo, retorna imediatamente da função.
 */
 void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+    printf("client_receive_answer_client\n");
     consume_begin(sems->srv_cli);
     semaphore_mutex_lock(sems->srv_cli->mutex);
     if((*data->terminate) != 1){
@@ -101,6 +108,7 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
     read_circular_buffer(buffers->srv_cli, data->buffers_size, op);
     semaphore_mutex_unlock(sems->srv_cli->mutex);
     consume_end(sems->srv_cli);
+
 }
 
 
@@ -111,6 +119,7 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
 * terminou.
 */
 void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){
+    printf("client_process_answer_client\n");
     int id = op->id;
     semaphore_mutex_lock(sems->results_mutex);
     data->results[id].id = op->id;
@@ -121,5 +130,3 @@ void client_process_answer(struct operation* op, struct main_data* data, struct 
 
     semaphore_mutex_unlock(sems->results_mutex);
 }
-
-// NAO ESQUECER: MMCPY DA OPERATION PARA DENTRO DO RESULT PORQUE VAMOS DAR FREE NO create_request
