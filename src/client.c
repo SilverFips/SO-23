@@ -29,11 +29,10 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
         }
        
         client_receive_answer(op, buffers, data,sems);
-        printf("before_if\n");
+
         if((op->id != -1) & (*(data->terminate) == 0)){
             client_process_answer(op, data, sems);
         }
-        printf("data->terminate %d\n", *(data->terminate));
         if(*(data->terminate) == 1){
             break;
         }
@@ -54,18 +53,19 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 * afirmativo, retorna imediatamente da função.
 */
 void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-    printf("entrou get_operation_client\n");
     consume_begin(sems->main_cli);
-    printf("stop client\n");
+    
     if((*data->terminate) == 1){
         return;
     }
+    
     semaphore_mutex_lock(sems->main_cli->mutex);
+    
     read_rnd_access_buffer(buffers->main_cli, data->buffers_size, op);
-    printf("read_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
+    
     semaphore_mutex_unlock(sems->main_cli->mutex);
     consume_end(sems->main_cli);
-    printf("saiu get_operation_client\n");
+    
 
 }
 
@@ -75,11 +75,11 @@ void client_get_operation(struct operation* op, struct communication_buffers* bu
 * incrementando o contador de operações.
 */
 void client_process_operation(struct operation* op, int cient_id, int* counter){
-    printf("entrou client_process_operation_client\n");
+    
     op->status = 'C';
     op->client = cient_id;
     (*counter)++;
-    printf("saiu client_process_operation_client\n");
+    
 }
 
 
@@ -109,7 +109,7 @@ void client_send_operation(struct operation* op, struct communication_buffers* b
 void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     printf("entrou client_receive_answer_client\n");
     consume_begin(sems->srv_cli);
-     if((*data->terminate) != 1){
+     if((*data->terminate) == 1){
         return;
     }
     semaphore_mutex_lock(sems->srv_cli->mutex);

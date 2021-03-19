@@ -19,7 +19,7 @@ void* create_shared_memory(char* name, int size){
 	char name_fd[50];
 	int ret;
 	sprintf(name_fd,"/%s_%d", name, getuid());
-	printf("%s\n", name_fd);
+	//printf("%s\n", name_fd);
 	int fd = shm_open(name_fd, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd == -1){ 
 		perror("shm"); 
@@ -95,7 +95,7 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 			break;
 		}
 	}
-	printf("write_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
+	//printf("write_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
 }
 
 
@@ -173,7 +173,7 @@ void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struc
 	buffer->op[pos_in].server = 0;
 	buffer->ptr->out = (pos_out +1) % buffer_size;
 
-	printf("read_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
+	//printf("read_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
 }
 
 

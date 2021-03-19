@@ -123,7 +123,6 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	op->server = 0;
 																//FALTA A SINCRONIZAÇÃO
 	produce_begin(sems->main_cli);
-	printf("write_main\n");
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
 	produce_end(sems->main_cli);
 	free(op);
@@ -145,7 +144,6 @@ void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA 
 	scanf("%s",a);
 	int i = atoi(a);
 
-	printf("%d\n", i);
 	semaphore_mutex_lock(sems->results_mutex);
 	char status = data->results[i].status;
 
@@ -177,7 +175,6 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 	wakeup_processes(data, sems);
 	
 	wait_processes(data);
-	printf("wait_process\n");
 	write_statistics(data);
 	
 	destroy_semaphores(sems);
@@ -404,30 +401,30 @@ int main(int argc, char *argv[]) {
 		perror("Nao foram dados parametros suficientes.");
         exit(1);
 	}else{
-		shm_unlink("/SHM_MAIN_CLI_PTR_1000");
-		shm_unlink("/SHM_MAIN_CLI_BUFFER_1000");
-		shm_unlink("/SHM_CLI_PRX_PTR_1000");
-		shm_unlink("/SHM_CLI_PRX_BUFFER_1000");
-		shm_unlink("/SHM_PRX_SRV_PTR_1000");
-		shm_unlink("/SHM_PRX_SRV_BUFFER_1000");
-		shm_unlink("/SHM_SRV_CLI_PTR_1000");
-		shm_unlink("/SHM_SRV_CLI_BUFFER_1000");
-		shm_unlink("/SHM_RESULTS_1000");
-		shm_unlink("/SHM_TERMINATE_1000");
+		// shm_unlink("/SHM_MAIN_CLI_PTR_1000");
+		// shm_unlink("/SHM_MAIN_CLI_BUFFER_1000");
+		// shm_unlink("/SHM_CLI_PRX_PTR_1000");
+		// shm_unlink("/SHM_CLI_PRX_BUFFER_1000");
+		// shm_unlink("/SHM_PRX_SRV_PTR_1000");
+		// shm_unlink("/SHM_PRX_SRV_BUFFER_1000");
+		// shm_unlink("/SHM_SRV_CLI_PTR_1000");
+		// shm_unlink("/SHM_SRV_CLI_BUFFER_1000");
+		// shm_unlink("/SHM_RESULTS_1000");
+		// shm_unlink("/SHM_TERMINATE_1000");
 
-		sem_unlink("sem_main_cli_full_1000");
-		sem_unlink("sem_main_cli_empty_1000");
-		sem_unlink("sem_main_cli_mutex_1000");
-		sem_unlink("sem_cli_prx_full_1000");
-		sem_unlink("sem_cli_prx_empty_1000");
-		sem_unlink("sem_cli_prx_mutex_1000");
-		sem_unlink("sem_prx_srv_full_1000");
-		sem_unlink("sem_prx_srv_empty_1000");
-		sem_unlink("sem_prx_srv_mutex_1000");
-		sem_unlink("sem_srv_cli_full_1000");
-		sem_unlink("sem_srv_cli_empty_1000");
-		sem_unlink("sem_srv_cli_mutex_1000");
-		sem_unlink("sem_results_mutex_1000");
+		// sem_unlink("sem_main_cli_full_1000");
+		// sem_unlink("sem_main_cli_empty_1000");
+		// sem_unlink("sem_main_cli_mutex_1000");
+		// sem_unlink("sem_cli_prx_full_1000");
+		// sem_unlink("sem_cli_prx_empty_1000");
+		// sem_unlink("sem_cli_prx_mutex_1000");
+		// sem_unlink("sem_prx_srv_full_1000");
+		// sem_unlink("sem_prx_srv_empty_1000");
+		// sem_unlink("sem_prx_srv_mutex_1000");
+		// sem_unlink("sem_srv_cli_full_1000");
+		// sem_unlink("sem_srv_cli_empty_1000");
+		// sem_unlink("sem_srv_cli_mutex_1000");
+		// sem_unlink("sem_results_mutex_1000");
 
 		
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));

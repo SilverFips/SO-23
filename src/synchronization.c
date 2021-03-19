@@ -15,7 +15,7 @@ sem_t * semaphore_create(char* name, int value){
 	char name_fd[50];
 	
 	sprintf(name_fd,"%s_%d", name, getuid());
-	printf( "%s\n", name_fd);
+	//printf( "%s\n", name_fd);
 	sem_t* sem = sem_open(name_fd, O_CREAT, 0xFFFFFFFF, value);
 	if (sem == SEM_FAILED)
  		perror(name);
