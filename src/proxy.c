@@ -14,7 +14,7 @@
 */
 int execute_proxy(int proxy_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     while(true){
-        
+        //read_circular_buffer(buffers->cli_prx, data->buffers_size, buffers->cli_prx->op);
         //le op cliente
         //op->id !=-1 && data->terminate == 0
         //processa-a e escreve para servidor
