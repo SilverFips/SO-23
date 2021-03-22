@@ -32,6 +32,8 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 
         if((op->id != -1) && (*(data->terminate) == 0)){
             client_process_answer(op, data, sems);
+            printf("\n\nID OP: %d ", op->id);
+
         }
         if(*(data->terminate) == 1){
             break;
