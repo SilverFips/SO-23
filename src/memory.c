@@ -161,17 +161,17 @@ void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struc
 
 	while(pos_in == pos_out);
 
-	op->id = buffer->op[pos_in].id;
-	buffer->op[pos_in].id = -1;
-	op->status = buffer->op[pos_in].status;
-	buffer->op[pos_in].status = ' ';
-	op->client = buffer->op[pos_in].client;
-	buffer->op[pos_in].client = -1;
-	op->proxy = buffer->op[pos_in].proxy;
-	buffer->op[pos_in].proxy = -1;
-	op->server = buffer->op[pos_in].server;
-	buffer->op[pos_in].server = -1;
-	buffer->ptr->out = (pos_out +1) % buffer_size;
+	op->id = buffer->op[pos_out].id;
+    buffer->op[pos_out].id = -1;
+    op->status = buffer->op[pos_out].status;
+    buffer->op[pos_out].status = ' ';
+    op->client = buffer->op[pos_out].client;
+    buffer->op[pos_out].client = -1;
+    op->proxy = buffer->op[pos_out].proxy;
+    buffer->op[pos_out].proxy = -1;
+    op->server = buffer->op[pos_out].server;
+    buffer->op[pos_out].server = -1;
+    buffer->ptr->out = (pos_out +1) % buffer_size;
 
 	//printf("read_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
 }
