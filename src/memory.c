@@ -92,10 +92,12 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 			buffer->op[i].proxy = op->proxy;
 			buffer->op[i].server = op->server;
 			buffer->ptr[i] = 1;
+			printf("\nmemory op id: %d, memory status: %c, memory client: %d, memory proxy: %d, memory server: %d   .\n", buffer->op[i].id, buffer->op[i].status, buffer->op[i].client, buffer->op[i].proxy, buffer->op[i].server );
 			break;
 		}
 	}
-	//printf("write_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
+	// printf("write_rnd : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
+	
 }
 
 

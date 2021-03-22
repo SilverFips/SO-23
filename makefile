@@ -31,4 +31,4 @@ valgrind:
 	valgrind --leak-check=full --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines 10 3 1 1 1
 
 exec:
-	$(BIN_DIR)/sovaccines 10 3 1 1 1
+	$(BIN_DIR)/sovaccines 10 3 3 4 5
