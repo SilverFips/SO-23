@@ -13,9 +13,16 @@
 * outros métodos auxiliares definidos em server.h.
 */
 int execute_server(int server_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+    int count = 0;
+    while(true){
 
-
-    return 1;
+        // le proxy op
+        //op->id != -1 && data->terminate == 0
+        // process_task -> client
+        // if op->id == -1 ignored e terminar prog
+        // return num ops procc
+    }
+    return count;
 }
 
 
@@ -25,20 +32,33 @@ int execute_server(int server_id, struct communication_buffers* buffers, struct 
 * tentar ler a operação, deve verificar se data->terminate tem valor 1.
 * Em caso afirmativo, retorna imediatamente da função.
 */
-void server_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
-
+void server_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+    consume_begin(sems->srv_cli);
+    semaphore_mutex_lock(sems->srv_cli->mutex);
+    read_circular_buffer(buffers->srv_cli, data->buffers_size, op);
+    semaphore_mutex_unlock(sems->srv_cli->mutex);
+    consume_end(sems->srv_cli);
+}
 
 /* Função que processa uma operação, alterando o seu campo server para o id
 * passado como argumento, alterando o estado da mesma para 'S' (served), e 
 * incrementando o contador de operações.
 */
-void server_process_operation(struct operation* op, int proxy_id, int* counter){}
+void server_process_operation(struct operation* op, int proxy_id, int* counter){
+    op->server = proxy_id;
+    op->status= 'S';
+    counter++;
+}
 
 
 /* Função que escreve uma operação no buffer de memória partilhada entre
 * servidores e clientes, efetuando a necessária sincronização antes e
 * depois de escrever.
 */
-void server_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){}
-
-
+void server_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
+    produce_begin(sems->srv_cli);
+    semaphore_mutex_lock(sems->srv_cli->mutex);
+    write_circular_buffer(buffers->srv_cli, data->buffers_size, op);
+    semaphore_mutex_unlock(sems->srv_cli->mutex);
+    produce_end(sems->srv_cli);
+}
