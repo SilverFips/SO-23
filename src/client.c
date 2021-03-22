@@ -18,11 +18,11 @@
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     int* count = malloc(sizeof(int));
     struct operation* op = malloc(sizeof(struct operation));
-    while(*(data->terminate) != 1){
+    while(1){
         
         client_get_operation(op, buffers, data, sems);
         
-        if((op->id != -1) & (*(data->terminate) == 0)){
+        if((op->id != -1) && (*(data->terminate) == 0)){
             client_process_operation(op, client_id, count);
             client_send_operation(op, buffers, data, sems);
             
@@ -30,7 +30,7 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
        
         client_receive_answer(op, buffers, data,sems);
 
-        if((op->id != -1) & (*(data->terminate) == 0)){
+        if((op->id != -1) && (*(data->terminate) == 0)){
             client_process_answer(op, data, sems);
         }
         if(*(data->terminate) == 1){
@@ -94,7 +94,7 @@ void client_send_operation(struct operation* op, struct communication_buffers* b
     write_circular_buffer(buffers->cli_prx, data->buffers_size, op);
     printf("write_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffers->cli_prx->op[0].id, buffers->cli_prx->op[0].status, buffers->cli_prx->op[0].client, buffers->cli_prx->op[0].proxy, buffers->cli_prx->op[0].server);
     semaphore_mutex_unlock(sems->cli_prx->mutex);
-    consume_end(sems->cli_prx);
+    produce_end(sems->cli_prx);
     printf("saiu client_send_operation_client\n");
 
 }

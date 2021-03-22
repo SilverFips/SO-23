@@ -118,9 +118,9 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	struct operation* op = malloc(sizeof(struct operation));
 	op-> id = (*op_counter);									//SERA QUE TENHO DE FAZER MALLOC?
 	op->status = ' ';
-	op->client = 0;
-	op->proxy = 0;
-	op->server = 0;
+	op->client = -1;
+	op->proxy = -1;
+	op->server = -1;
 																//FALTA A SINCRONIZAÇÃO
 	produce_begin(sems->main_cli);
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
