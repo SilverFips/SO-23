@@ -44,10 +44,8 @@ int execute_proxy(int proxy_id, struct communication_buffers* buffers, struct ma
 void proxy_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     
     consume_begin(sems->cli_prx);
-    if(*(data->terminate)== 1){
-        consume_end(sems->cli_prx);
+    if(*(data->terminate)== 1)
         return;
-    }
     semaphore_mutex_lock(sems->cli_prx->mutex);
     read_circular_buffer(buffers->cli_prx, data->buffers_size, op);
     semaphore_mutex_unlock(sems->cli_prx->mutex);
