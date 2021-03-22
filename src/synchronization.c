@@ -1,5 +1,4 @@
-#include <unistd.h>
-#include <sys/types.h>
+
 #include <fcntl.h>
 #include <semaphore.h>
 #include <stdio.h>
