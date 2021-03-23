@@ -206,11 +206,26 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 */
 void wakeup_processes(struct main_data* data, struct semaphores* sems){			//NÃO ESTA ACABADO
 
-	produce_end(sems->main_cli);
-	produce_end(sems->cli_prx);
-	produce_end(sems->prx_srv);
-	produce_end(sems->srv_cli);
-
+	int clientes = data->n_clients;
+	int proxies = data->n_proxies;
+	int servers = data->n_servers;
+	for(int i = 0; i < clientes; i++){
+		produce_end(sems->main_cli);
+		printf("produce end main_cli\n");			
+	}
+	for(int i = 0; i < proxies; i++){
+		produce_end(sems->cli_prx);	
+		printf("produce end cli_prx\n");		
+	}
+	for(int i = 0; i < servers; i++){
+		produce_end(sems->prx_srv);
+		printf("produce end prx_srv\n");		
+	}
+	for(int i = 0; i < clientes; i++){
+		produce_end(sems->srv_cli);
+		printf("produce end srv_cli para cliente\n");			
+	}
+	
 }
 
 /* Função que espera que todos os processos previamente iniciados terminem,

@@ -28,7 +28,7 @@ clean :
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines
 
 valgrind:
-	valgrind --leak-check=full --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines 10 3 1 1 1
+	valgrind --leak-check=full --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines 10 3 3 4 5
 
 exec:
 	$(BIN_DIR)/sovaccines 10 3 3 4 5
