@@ -45,17 +45,14 @@ int execute_server(int server_id, struct communication_buffers* buffers, struct 
 * Em caso afirmativo, retorna imediatamente da função.
 */
 void server_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-    printf("entrou server_receive_operation\n");
     consume_begin(sems-> prx_srv);
     if((*data->terminate) == 1){
-        printf("termnou server_receive_operation\n");
         return;
     }
     semaphore_mutex_lock(sems-> prx_srv->mutex);
     read_rnd_access_buffer(buffers-> prx_srv, data->buffers_size, op);
     semaphore_mutex_unlock(sems-> prx_srv->mutex);
     consume_end(sems-> prx_srv);
-    printf("saiu server_receive_operation\n");
 }
 
 

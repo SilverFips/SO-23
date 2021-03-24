@@ -113,20 +113,20 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 * necessária sincronização antes e depois de escrever. Imprime o id da
 * operação e incrementa o contador de operações op_counter.
 */
-void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) { //NAO ESTA ACABDO
+void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems) { 
 
 	struct operation* op = malloc(sizeof(struct operation));
-	op-> id = (*op_counter);									//SERA QUE TENHO DE FAZER MALLOC?
+	op-> id = (*op_counter);									
 	op->status = ' ';
 	op->client = -1;
 	op->proxy = -1;
 	op->server = -1;
-																//FALTA A SINCRONIZAÇÃO
+																
 	produce_begin(sems->main_cli);
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
 	produce_end(sems->main_cli);
 	free(op);
-	printf("A op %d foi realizada com sucesso.\n", *op_counter);
+	printf("-> A op #%d foi realizada com sucesso.\n", *op_counter);
 	(*op_counter)++;
 }
 
@@ -137,32 +137,32 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 * data->results deve ser sincronizado com as funções e semáforos
 * respetivos.
 */
-void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA ACABADO
+void read_answer(struct main_data* data, struct semaphores* sems) {		
 				
 	// char a[10];
 	// scanf("%s",a);
 	// int i = atoi(a);
 	
 	int i;
-	printf("Qual a operação pretendida? (valor máximo é %d)\n", data->max_ops);
+	printf("-> Qual a operação pretendida? (valor máximo é %d)\n", (data->max_ops-1));
 	scanf("%d", &i);
 
 	semaphore_mutex_lock(sems->results_mutex);
 	char status = data->results[i].status;
 
 	if(status != 'S'){
-		printf("A op %d, ainda não esta realizada.\n", i);
+		printf("-> A op #%d, ainda não esta realizada.\n", i);
 		return;
 	}
-	 		//ISTO É SO UMA VARIAVEL DE TESTE PERGUNTAR SE NA FUNCAO NAO DEVAI RECEBER UM ARGUMENTO COM INT
+	 		
 	
 	int client =  data->results[i].client;
 	int proxy = data->results[i].proxy;
 	int server = data->results[i].server;
 
-	// NÃO ESQUECER QUE AINDA FALTA FAZER A SINCRONIZACAO
+	
 	semaphore_mutex_unlock(sems->results_mutex);
-	printf("Op %d com estado %c foi recebida pelo cliente %d, encaminhada pelo proxu %d, e tratada pelo servido %d!\n", i, status, client, proxy, server);
+	printf("-> Op #%d com estado %c foi recebida pelo cliente %d, encaminhada pelo proxy %d, e tratada pelo servido %d!\n", i, status, client, proxy, server);
 }
 
 /* Função que termina a execução do programa sovaccines. Deve começar por 
@@ -172,7 +172,7 @@ void read_answer(struct main_data* data, struct semaphores* sems) {		//NAO ESTA 
 * os semáforos e zonas de memória partilhada e dinâmica previamente 
 *reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
-void stop_execution(struct main_data* data, struct communication_buffers* buffers, struct semaphores* sems){  //NAO ESTA ACABADO
+void stop_execution(struct main_data* data, struct communication_buffers* buffers, struct semaphores* sems){  
 	*(data->terminate) = 1;
 	
 	wakeup_processes(data, sems);
@@ -204,38 +204,28 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 * onde possam estar processos adormecidos e um número de vezes igual ao 
 * máximo de processos que possam lá estar.
 */
-void wakeup_processes(struct main_data* data, struct semaphores* sems){			//NÃO ESTA ACABADO
+void wakeup_processes(struct main_data* data, struct semaphores* sems){			
 
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
 	int servers = data->n_servers;
 	for(int i = 0; i < clientes; i++){
 		produce_end(sems->main_cli);
-		printf("produce end main_cli\n");			
+		produce_end(sems->srv_cli);			
 	}
 	for(int i = 0; i < proxies; i++){
-		produce_end(sems->cli_prx);	
-		printf("produce end cli_prx\n");		
+		produce_end(sems->cli_prx);			
 	}
 	for(int i = 0; i < servers; i++){
-		produce_end(sems->prx_srv);
-		printf("produce end prx_srv\n");		
-	}
-	for(int i = 0; i < clientes; i++){
-		produce_end(sems->srv_cli);
-		printf("produce end srv_cli para cliente\n");			
-	}
-	
+		produce_end(sems->prx_srv);		
+	}	
 }
 
 /* Função que espera que todos os processos previamente iniciados terminem,
 * incluindo clientes, proxies e servidores. Para tal, pode usar a função 
 * wait_process do process.h.
 */
-void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
-
-	//Chamar a funcao wait process
-	// guardar no historico
+void wait_processes(struct main_data* data){		
 
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
@@ -257,18 +247,20 @@ void wait_processes(struct main_data* data){		//MUITO PROVAVEL ESTAR MAL
 * operações foram processadas por cada cliente, proxy e servidor.
 */
 void write_statistics(struct main_data* data){
-	printf("Terminando o sovaccines! Imprimindo estatísticas:\n");
+	printf("-> Terminando o sovaccines! Imprimindo estatísticas:\n");
 
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
 	int servers = data->n_servers;
-
+	printf("\n");
 	for(int i = 0; i < clientes; i++){					
 		printf("Client %d recebeu %d pedidos!\n",i ,data->client_stats[i]);
 	}
+	printf("\n");
 	for(int i = 0; i < proxies; i++){
 		printf("Proxy %d recebeu %d pedidos!\n",i ,data->proxy_stats[i]);
 	}
+	printf("\n");
 	for(int i = 0; i < servers; i++){
 		printf("Server %d recebeu %d pedidos!\n",i ,data->server_stats[i]);
 	}
@@ -313,7 +305,7 @@ void destroy_shared_memory_buffers(struct main_data* data, struct communication_
 
 /* Função que liberta todos os semáforos da estrutura semaphores.
 */
-void destroy_semaphores(struct semaphores* sems){							//NAO ESTA ACABADO
+void destroy_semaphores(struct semaphores* sems){						
 	semaphore_destroy(STR_SEM_MAIN_CLI_FULL, sems->main_cli->full);
 	semaphore_destroy(STR_SEM_MAIN_CLI_EMPTY, sems->main_cli->empty);
 	semaphore_destroy(STR_SEM_MAIN_CLI_MUTEX, sems->main_cli->mutex);
@@ -345,7 +337,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	//Primeira mensagem a ser impressa
 	printf("Ações disponiveis: \n");
 	printf("	op - criar um pedido de aquisição de vacinas\n");
-	printf("	read x - consultar o estado do pedido x (valor máximo é %d)\n", data->max_ops);
+	printf("	read - consultar o estado de um pedido (valor máximo é %d)\n", data->max_ops);
 	printf("	stop - termina a execução do sovaccines.\n");
 	printf("	help - imprime informação sobre as ações disponiveis\n");
 
@@ -354,7 +346,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 
 	while(end != 1){
 		char resp[10];
-		printf("Introduzir ação:\n");
+		printf("-> Introduzir ação:\n");
 		scanf("%s", resp);
 
 		if(strcmp(resp,"stop") == 0){
@@ -364,13 +356,12 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 		}else if(strcmp(resp,"help") == 0){
 				printf("Ações disponiveis: \n");
 				printf("	op - criar um pedido de aquisição de vacinas\n");
-				printf("	read x - consultar o estado do pedido x (valor máximo é %d)\n", data->max_ops);
+				printf("	read - consultar o estado de um pedido (valor máximo é %d)\n", data->max_ops);
 				printf("	stop - termina a execução do sovaccines.\n");
 				printf("	help - imprime informação sobre as ações disponiveis\n");
 		}else if(strcmp(resp,"op") == 0){
-			if(data->max_ops < (*p)){			
-					printf("O número máximo de pedidos foi alcançado!\n");
-					break;
+			if(data->max_ops < ((*p)+1)){			
+					printf("-> O número máximo de pedidos foi alcançado!\n");
 				}else{
 					create_request(p, buffers, data, sems); 
 				}
@@ -378,8 +369,9 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 			
 				read_answer(data, sems);
 		}else{
-			printf("Ação não reconhecida, insira 'help' para assistência.\n");
+			printf("-> Ação não reconhecida, insira 'help' para assistência.\n");
 		}
+		printf("-------------------------------------------------------------------------\n");
 	}
 
 	
@@ -419,32 +411,7 @@ int main(int argc, char *argv[]) {
 		perror("Nao foram dados parametros suficientes.");
         exit(1);
 	}else{
-		shm_unlink("/SHM_MAIN_CLI_PTR_1000");
-		shm_unlink("/SHM_MAIN_CLI_BUFFER_1000");
-		shm_unlink("/SHM_CLI_PRX_PTR_1000");
-		shm_unlink("/SHM_CLI_PRX_BUFFER_1000");
-		shm_unlink("/SHM_PRX_SRV_PTR_1000");
-		shm_unlink("/SHM_PRX_SRV_BUFFER_1000");
-		shm_unlink("/SHM_SRV_CLI_PTR_1000");
-		shm_unlink("/SHM_SRV_CLI_BUFFER_1000");
-		shm_unlink("/SHM_RESULTS_1000");
-		shm_unlink("/SHM_TERMINATE_1000");
 
-		sem_unlink("sem_main_cli_full_1000");
-		sem_unlink("sem_main_cli_empty_1000");
-		sem_unlink("sem_main_cli_mutex_1000");
-		sem_unlink("sem_cli_prx_full_1000");
-		sem_unlink("sem_cli_prx_empty_1000");
-		sem_unlink("sem_cli_prx_mutex_1000");
-		sem_unlink("sem_prx_srv_full_1000");
-		sem_unlink("sem_prx_srv_empty_1000");
-		sem_unlink("sem_prx_srv_mutex_1000");
-		sem_unlink("sem_srv_cli_full_1000");
-		sem_unlink("sem_srv_cli_empty_1000");
-		sem_unlink("sem_srv_cli_mutex_1000");
-		sem_unlink("sem_results_mutex_1000");
-
-		
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
 		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
 		buffers->main_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));

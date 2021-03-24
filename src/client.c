@@ -32,7 +32,6 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 
         if((op->id != -1) && (*(data->terminate) == 0)){
             client_process_answer(op, data, sems);
-            printf("\n\nID OP: %d ", op->id);
 
         }
         if(*(data->terminate) == 1){
@@ -42,7 +41,6 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
     free(op);
     int i = (*count);
     free(count);
-    //exit(i);
     return i;
 
 }
@@ -90,14 +88,11 @@ void client_process_operation(struct operation* op, int cient_id, int* counter){
 * de escrever.
 */
 void client_send_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-    printf("entrou client_send_operation_client\n");
     produce_begin(sems->cli_prx);
     semaphore_mutex_lock(sems->cli_prx->mutex);
     write_circular_buffer(buffers->cli_prx, data->buffers_size, op);
-    printf("write_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffers->cli_prx->op[0].id, buffers->cli_prx->op[0].status, buffers->cli_prx->op[0].client, buffers->cli_prx->op[0].proxy, buffers->cli_prx->op[0].server);
     semaphore_mutex_unlock(sems->cli_prx->mutex);
     produce_end(sems->cli_prx);
-    printf("saiu client_send_operation_client\n");
 
 }
 
@@ -109,7 +104,6 @@ void client_send_operation(struct operation* op, struct communication_buffers* b
 * Em caso afirmativo, retorna imediatamente da função.
 */
 void client_receive_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-    printf("entrou client_receive_answer_client\n");
     consume_begin(sems->srv_cli);
      if((*data->terminate) == 1){
         return;
@@ -118,7 +112,6 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
     read_circular_buffer(buffers->srv_cli, data->buffers_size, op);
     semaphore_mutex_unlock(sems->srv_cli->mutex);
     consume_end(sems->srv_cli);
-    printf("saiu client_receive_answer_client\n");
 }
 
 
@@ -129,7 +122,6 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
 * terminou.
 */
 void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){
-    printf("entrou client_process_answer_client\n");
     int id = op->id;
     semaphore_mutex_lock(sems->results_mutex);
     data->results[id].id = op->id;
@@ -139,5 +131,4 @@ void client_process_answer(struct operation* op, struct main_data* data, struct 
     data->results[id].server = op->server;
 
     semaphore_mutex_unlock(sems->results_mutex);
-    printf("saiu client_process_answer_client\n");
 }
