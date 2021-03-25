@@ -1,3 +1,10 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "memory.h"
@@ -15,6 +22,7 @@
 * o número de operações processadas. Para efetuar estes passos, pode usar os
 * outros métodos auxiliares definidos em client.h. 
 */
+
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     int* count = malloc(sizeof(int));
     struct operation* op = malloc(sizeof(struct operation));

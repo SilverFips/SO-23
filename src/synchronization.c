@@ -1,3 +1,9 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
 
 #include <fcntl.h>
 #include <semaphore.h>
@@ -12,10 +18,11 @@
 */
 sem_t * semaphore_create(char* name, int value){
 	
-	char name_fd[50];
+	char name_fd[100];
 	
-	sprintf(name_fd,"%s_%d", name, getuid());
-	sem_t* sem = sem_open(name_fd, O_CREAT, 0xFFFFFFFF, value);
+	sprintf(name_fd,"/%s_%d", name, getuid());
+	sem_t* sem;
+	sem = sem_open(name_fd, O_CREAT, 0xFFFFFFFF, value);
 	if (sem == SEM_FAILED)
  		perror(name);
 	return sem;
@@ -26,7 +33,7 @@ sem_t * semaphore_create(char* name, int value){
 void semaphore_destroy(char* name, sem_t* semaphore){
 	char name_fd[50];
 	
-	sprintf(name_fd,"%s_%d", name, getuid());
+	sprintf(name_fd,"/%s_%d", name, getuid());
 	
 	if (sem_close(semaphore) == -1){
  		perror(name);

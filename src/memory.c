@@ -1,3 +1,10 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>

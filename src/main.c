@@ -1,3 +1,10 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -62,21 +69,21 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 * igual ao tamanho dos buffers de memória partilhada, e os *_mutex com valor
 * igual a 1. Para tal pode ser usada a função semaphore_create.
 */
-void create_semaphores(struct main_data* data, struct semaphores* sems){		//NAO ESTA ACABADO
+void create_semaphores(struct main_data* data, struct semaphores* sems){		
 	sems->main_cli->full = semaphore_create(STR_SEM_MAIN_CLI_FULL, 0);
-	sems->main_cli->empty = semaphore_create(STR_SEM_MAIN_CLI_EMPTY , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->main_cli->empty = semaphore_create(STR_SEM_MAIN_CLI_EMPTY , data->buffers_size);		
 	sems->main_cli->mutex = semaphore_create(STR_SEM_MAIN_CLI_MUTEX, 1);
 
 	sems->cli_prx->full = semaphore_create(STR_SEM_CLI_PRX_FULL, 0);
-	sems->cli_prx->empty = semaphore_create(STR_SEM_CLI_PRX_EMPTY , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->cli_prx->empty = semaphore_create(STR_SEM_CLI_PRX_EMPTY , data->buffers_size);		
 	sems->cli_prx->mutex = semaphore_create(STR_SEM_CLI_PRX_MUTEX, 1);
 
 	sems->prx_srv->full = semaphore_create(STR_SEM_PRX_SRV_FULL, 0);
-	sems->prx_srv->empty = semaphore_create(STR_SEM_PRX_SRV_EMPTY , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->prx_srv->empty = semaphore_create(STR_SEM_PRX_SRV_EMPTY , data->buffers_size);		
 	sems->prx_srv->mutex = semaphore_create(STR_SEM_PRX_SRV_MUTEX, 1);
 
 	sems->srv_cli->full = semaphore_create(STR_SEM_SRV_CLI_FULL, 0);
-	sems->srv_cli->empty = semaphore_create(STR_SEM_SRV_CLI_EMPTY  , data->buffers_size);		//NAO SEI SE ESTA BEM O VALOR
+	sems->srv_cli->empty = semaphore_create(STR_SEM_SRV_CLI_EMPTY  , data->buffers_size);		
 	sems->srv_cli->mutex = semaphore_create(STR_SEM_SRV_CLI_MUTEX , 1);
 
 	sems->results_mutex = semaphore_create(STR_SEM_RESULTS_MUTEX , 1);
@@ -152,6 +159,7 @@ void read_answer(struct main_data* data, struct semaphores* sems) {
 
 	if(status != 'S'){
 		printf("-> A op #%d, ainda não esta realizada.\n", i);
+		semaphore_mutex_unlock(sems->results_mutex);
 		return;
 	}
 	 		
@@ -258,11 +266,11 @@ void write_statistics(struct main_data* data){
 	}
 	printf("\n");
 	for(int i = 0; i < proxies; i++){
-		printf("Proxy %d recebeu %d pedidos!\n",i ,data->proxy_stats[i]);
+		printf("Proxy %d encaminhou %d pedidos!\n",i ,data->proxy_stats[i]);
 	}
 	printf("\n");
 	for(int i = 0; i < servers; i++){
-		printf("Server %d recebeu %d pedidos!\n",i ,data->server_stats[i]);
+		printf("Server %d respondeu %d pedidos!\n",i ,data->server_stats[i]);
 	}
 }
 
@@ -341,7 +349,8 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	printf("	stop - termina a execução do sovaccines.\n");
 	printf("	help - imprime informação sobre as ações disponiveis\n");
 
-	int* p = malloc(sizeof(int));
+	int* p = calloc(1,sizeof(int));
+	//*p = 0;
 	int end = 0;
 
 	while(end != 1){
@@ -411,7 +420,7 @@ int main(int argc, char *argv[]) {
 		perror("Nao foram dados parametros suficientes.");
         exit(1);
 	}else{
-
+				
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
 		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
 		buffers->main_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
