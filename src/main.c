@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
@@ -60,7 +61,7 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 	data->results = create_shared_memory( STR_SHM_RESULTS	, (data->max_ops)*sizeof(struct operation));
 	
 	data->terminate = create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
-	*(data->terminate) = 0;
+	
 
 }
 
@@ -133,7 +134,10 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
 	produce_end(sems->main_cli);
 	free(op);
-	printf("-> A op #%d foi realizada com sucesso.\n", *op_counter);
+	sleep(0.9);
+	//consume_begin(sems->main_cli);
+	printf("-> A op #%d pode ser consultada.\n", *op_counter);
+	//consume_end(sems->main_cli);
 	(*op_counter)++;
 }
 
@@ -416,8 +420,10 @@ void main_args(int argc, char* argv[], struct main_data* data) {
 int main(int argc, char *argv[]) {
 //init data structures
 
-	if(argc < 6) {
-		perror("Nao foram dados parametros suficientes.");
+	if(argc != 6) {
+		perror("Nao foram dados o numero de parametros corretos.\n");
+		printf("Estrutura: sovaccines max_ops buffers_size n_clients n_proxies n_servers\n");
+		printf("Exemplo: ./bin/sovaccines 10 10 1 1 1\n");
         exit(1);
 	}else{
 				

@@ -137,6 +137,9 @@ void client_process_answer(struct operation* op, struct main_data* data, struct 
     data->results[id].client = op->client;
     data->results[id].proxy = op->proxy;
     data->results[id].server = op->server;
-
+    
     semaphore_mutex_unlock(sems->results_mutex);
+    
+    printf("-> A op #%d foi realizada com sucesso.\n", data->results[id].id);
+
 }
