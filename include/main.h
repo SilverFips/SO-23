@@ -24,6 +24,8 @@ struct main_data {
 	struct operation* results;	//array com histórico de ops executadas
 	
 	int* terminate; //flag booleana, valor 1 indica que sovaccines deve terminar a sua execução
+
+	int alarm; //alarme
 };
 
 
@@ -96,7 +98,7 @@ void read_answer(struct main_data* data, struct semaphores* sems);
 *reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
 void stop_execution(struct main_data* data, struct communication_buffers* buffers, struct semaphores* sems);
-
+//void stop_execution();
 /* Função que acorda todos os processos adormecidos em semáforos, para que
 * estes percebam que foi dada ordem de terminação do programa. Para tal,
 * pode ser usada a função produce_end sobre todos os conjuntos de semáforos

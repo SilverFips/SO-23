@@ -7,9 +7,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include "sosignal.h"
 #include "memory.h"
 #include "main.h"
 #include "server.h"
+#include "sotime.h"
 
 /* Função principal de um Servidor. Deve executar um ciclo infinito onde em 
 * cada iteração do ciclo lê uma operação dos proxies e se a mesma tiver id 
@@ -23,6 +26,16 @@
 int execute_server(int server_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     int* count = malloc(sizeof(int));
     struct operation* op = malloc(sizeof(struct operation));
+        struct sigaction sa;
+	sa.sa_handler = ctrlC_other;
+	sa.sa_flags = SA_RESTART;
+	sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGALRM);
+	
+	if (sigaction(SIGINT, &sa, NULL) == -1) {
+		perror("main:");
+		exit(-1);
+	}
     while(1){
         server_receive_operation(op, buffers, data, sems);
 
@@ -70,6 +83,7 @@ void server_process_operation(struct operation* op, int proxy_id, int* counter){
     op->server = proxy_id;
     op->status= 'S';
     (*counter)++;
+    op->server_time = getTime(op->server_time);
 }
 
 

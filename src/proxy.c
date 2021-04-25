@@ -7,7 +7,10 @@
 
 #include "memory.h"
 #include "proxy.h"
+#include "sotime.h"
 #include "main.h"
+#include <signal.h>
+#include "sosignal.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -23,6 +26,16 @@
 int execute_proxy(int proxy_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     int* count = malloc(sizeof(int));
     struct operation* op = malloc(sizeof(struct operation));
+        struct sigaction sa;
+	sa.sa_handler = ctrlC_other;
+	sa.sa_flags = SA_RESTART;
+	sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGALRM);
+	
+	if (sigaction(SIGINT, &sa, NULL) == -1) {
+		perror("main:");
+		exit(-1);
+	}
     while(1){
         proxy_receive_operation(op, buffers, data, sems);
         if((op->id != -1) && (*data->terminate == 0)){
@@ -69,6 +82,7 @@ void proxy_process_operation(struct operation* op, int server_id, int* counter){
     op->proxy = server_id;
     op->status = 'P';
     (*counter)++;
+    op->proxy_time = getTime(op->proxy_time);
 }
     
 

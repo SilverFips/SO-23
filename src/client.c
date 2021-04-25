@@ -7,9 +7,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include "sosignal.h"
 #include "memory.h"
 #include "main.h"
 #include "client.h"
+#include "sotime.h"
+
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito
 * onde cada iteração do ciclo tem dois passos: primeiro, lê uma operação
@@ -24,12 +28,21 @@
 */
 
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-    int* count = malloc(sizeof(int));
+    int* count = calloc(0,sizeof(int));
     struct operation* op = malloc(sizeof(struct operation));
+    struct sigaction sa;
+	sa.sa_handler = ctrlC_other;
+	sa.sa_flags = SA_RESTART;
+	sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGALRM);
+	
+	if (sigaction(SIGINT, &sa, NULL) == -1) {
+		perror("main:");
+		exit(-1);
+	}
     while(1){
-        
         client_get_operation(op, buffers, data, sems);
-        
+
         if((op->id != -1) && (*(data->terminate) == 0)){
             client_process_operation(op, client_id, count);
             client_send_operation(op, buffers, data, sems);
@@ -43,7 +56,9 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 
         }
         if(*(data->terminate) == 1){
+            
             break;
+            
         }
     }
     free(op);
@@ -62,15 +77,14 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 */
 void client_get_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
     consume_begin(sems->main_cli);
-    
     if((*data->terminate) == 1){
+
+        
         return;
     }
     
     semaphore_mutex_lock(sems->main_cli->mutex);
-    
     read_rnd_access_buffer(buffers->main_cli, data->buffers_size, op);
-    
     semaphore_mutex_unlock(sems->main_cli->mutex);
     consume_end(sems->main_cli);
     
@@ -87,6 +101,8 @@ void client_process_operation(struct operation* op, int cient_id, int* counter){
     op->status = 'C';
     op->client = cient_id;
     (*counter)++;
+    op->client_time = getTime(op->client_time);
+    
     
 }
 
@@ -131,13 +147,18 @@ void client_receive_answer(struct operation* op, struct communication_buffers* b
 */
 void client_process_answer(struct operation* op, struct main_data* data, struct semaphores* sems){
     int id = op->id;
+    
     semaphore_mutex_lock(sems->results_mutex);
     data->results[id].id = op->id;
     data->results[id].status = op->status;
     data->results[id].client = op->client;
     data->results[id].proxy = op->proxy;
     data->results[id].server = op->server;
-    
+    data->results[id].start_time = op->start_time;
+    data->results[id].client_time = op->client_time;
+    data->results[id].proxy_time = op->proxy_time;
+    data->results[id].server_time = op->server_time;
+    data->results[id].end_time = getTime(data->results[id].end_time);
     semaphore_mutex_unlock(sems->results_mutex);
     
     printf("-> A op #%d foi realizada com sucesso.\n", data->results[id].id);

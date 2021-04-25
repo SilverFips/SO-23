@@ -95,6 +95,11 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 			buffer->op[i].client = op->client;
 			buffer->op[i].proxy = op->proxy;
 			buffer->op[i].server = op->server;
+			buffer->op[i].start_time = op->start_time;
+			buffer->op[i].client_time = op->client_time;
+			buffer->op[i].proxy_time = op->proxy_time;
+			buffer->op[i].server_time = op->server_time;
+			buffer->op[i].end_time = op->end_time;
 			buffer->ptr[i] = 1;
 			//printf("memory op id: %d, memory status: %c, memory client: %d, memory proxy: %d, memory server: %d   .\n", buffer->op[i].id, buffer->op[i].status, buffer->op[i].client, buffer->op[i].proxy, buffer->op[i].server );
 			break;
@@ -110,9 +115,9 @@ void write_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, 
 */
 void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){
 	int pos_in = buffer->ptr->in;
-	int pos_out = buffer->ptr->out;
+	//int pos_out = buffer->ptr->out;
 
-	while(((pos_in + 1) % buffer_size) == pos_out);
+	//while(((pos_in + 1) % buffer_size) == pos_out);
 	buffer->op[pos_in].id = op->id;
 	
 	buffer->op[pos_in].status = op->status;
@@ -120,6 +125,11 @@ void write_circular_buffer(struct circular_buffer* buffer, int buffer_size, stru
 	
 	buffer->op[pos_in].proxy = op->proxy;
 	buffer->op[pos_in].server = op->server;
+	buffer->op[pos_in].start_time = op->start_time;
+	buffer->op[pos_in].client_time = op->client_time;
+	buffer->op[pos_in].proxy_time = op->proxy_time;
+	buffer->op[pos_in].server_time = op->server_time;
+	buffer->op[pos_in].end_time = op->end_time;
 	buffer->ptr->in = (pos_in +1) % buffer_size;
 
 	//printf("write_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", buffer->op[pos_in].id, buffer->op[pos_in].status, buffer->op[pos_in].client, buffer->op[pos_in].proxy, buffer->op[pos_in].server);
@@ -144,6 +154,13 @@ void read_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, s
 			buffer->op[i].proxy = -1;
 			op->server = buffer->op[i].server;
 			buffer->op[i].server = -1;
+			op->start_time = buffer->op[i].start_time;
+			op->client_time = buffer->op[i].client_time;
+			op->server_time = buffer->op[i].server_time;
+			op->proxy_time = buffer->op[i].proxy_time;
+			op->end_time = buffer->op[i].end_time;
+
+
 			buffer->ptr[i] = 0;
 			
 			return;
@@ -161,10 +178,10 @@ void read_rnd_access_buffer(struct rnd_access_buffer* buffer, int buffer_size, s
 */
 void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op){
 
-	int pos_in = buffer->ptr->in;
+	//int pos_in = buffer->ptr->in;
 	int pos_out = buffer->ptr->out;
 
-	while(pos_in == pos_out);
+	//while(pos_in == pos_out);
 
 	op->id = buffer->op[pos_out].id;
     buffer->op[pos_out].id = -1;
@@ -176,6 +193,11 @@ void read_circular_buffer(struct circular_buffer* buffer, int buffer_size, struc
     buffer->op[pos_out].proxy = -1;
     op->server = buffer->op[pos_out].server;
     buffer->op[pos_out].server = -1;
+	op->start_time = buffer->op[pos_out].start_time;
+	op->client_time = buffer->op[pos_out].client_time;
+	op->server_time = buffer->op[pos_out].server_time;
+	op->proxy_time = buffer->op[pos_out].proxy_time;
+	op->end_time = buffer->op[pos_out].end_time;
     buffer->ptr->out = (pos_out +1) % buffer_size;
 
 	//printf("read_circular : op: %d, st: %c, cli: %d, pro: %d, srv: %d\n", op->id, op->status, op->client, op->proxy, op->server);
