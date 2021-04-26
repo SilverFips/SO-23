@@ -25,7 +25,7 @@ sovaccines : $(OBJETOS)
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<
 
 clean :
-	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines
+	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines $(BIN_DIR)/log
 
 valgrind:
 	valgrind --leak-check=full --track-origins=yes --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines 4 3 3 4 5

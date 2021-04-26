@@ -179,6 +179,7 @@ void read_answer(struct main_data* data, struct semaphores* sems) {
 	char status = data->results[i].status;
 
 	if(status != 'S'){
+		write_file_log(log_data, "read", i);
 		printf("-> A op #%d, ainda não esta realizada.\n", i);
 		semaphore_mutex_unlock(sems->results_mutex);
 		return;
@@ -390,7 +391,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	//REFERENCIA A PARTE DO SIGNAL 
 	struct sigaction sa;
 	sa.sa_handler = sig_handler;
-	sa.sa_flags = SA_RESTART;
+	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	
 
@@ -400,8 +401,11 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	}
 
 	//ALARME
-		
-	if (sigaction(SIGALRM, &sa, NULL) == -1) {
+	struct sigaction s;
+	s.sa_handler = sig_handler;
+	s.sa_flags = SA_RESTART;
+	sigemptyset(&s.sa_mask);	
+	if (sigaction(SIGALRM, &s, NULL) == -1) {
 		perror("main:");
 		exit(-1);
 	}
@@ -418,6 +422,11 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 		char resp[10];
 		printf("-> Introduzir ação:\n");
 		scanf("%s", resp);
+
+		if(end == 1){
+			printf("-------------------------------------------------------------------------\n");
+			return;
+		}
 			
 		if(strcmp(resp,"stop") == 0){
 				write_file_log(log_data, resp, -1);
