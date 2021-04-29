@@ -24,7 +24,7 @@
 * métodos auxiliares definidos em proxy.h.
 */
 int execute_proxy(int proxy_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems){
-    int* count = malloc(sizeof(int));
+    int* count = calloc(0,sizeof(int));
     struct operation* op = malloc(sizeof(struct operation));
         struct sigaction sa;
 	sa.sa_handler = ctrlC_other;
