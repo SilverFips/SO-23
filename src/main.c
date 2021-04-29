@@ -17,6 +17,7 @@
 #include "memory-private.h"
 #include "synchronization.h"
 #include "process.h"
+#include "configuration.h"
 
 
 /* Função que reserva a memória dinâmica necessária para a execução
@@ -396,35 +397,20 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 * estrutura main_data.
 */
 void main_args(int argc, char* argv[], struct main_data* data) {
-	for(int i = 1; i < argc; i++){
-		switch (i) {
-			case 1:
-				data->max_ops = atoi(argv[i]);
-				break;
-			case 2:
-				data->buffers_size = atoi(argv[i]);
-				break;
-			case 3:
-				data->n_clients = atoi(argv[i]);
-				break;
-			case 4:
-				data->n_proxies = atoi(argv[i]);
-				break;
-			case 5:
-				data->n_servers = atoi(argv[i]);
-				break;
-		}
-	}
+	char *config_file = argv[1];
+	open_begin_file(config_file, data);
+
 }
 
 int main(int argc, char *argv[]) {
 //init data structures
-
-	if(argc != 6) {
-		perror("Nao foram dados o numero de parametros corretos.\n");
-		printf("Estrutura: sovaccines max_ops buffers_size n_clients n_proxies n_servers\n");
-		printf("Exemplo: ./bin/sovaccines 10 10 1 1 1\n");
-        exit(1);
+	if(argc != 1){
+		perror("Numero de parametros incorretos.\n");
+	// if(argc != 6) {
+	// 	perror("Nao foram dados o numero de parametros corretos.\n");
+	// 	printf("Estrutura: sovaccines max_ops buffers_size n_clients n_proxies n_servers\n");
+	// 	printf("Exemplo: ./bin/sovaccines 10 10 1 1 1\n");
+    //     exit(1);
 	}else{
 				
 		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));

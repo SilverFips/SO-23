@@ -16,7 +16,8 @@ struct main_data {
 	int *client_pids;	//process ids de clientes
 	int *proxy_pids;	//process ids de proxies
 	int *server_pids;	//process ids de servidores
-	
+	int alarme;			//alarme
+
 	int* client_stats;	//nº de operações recebidas por cada cliente
 	int* proxy_stats;	//nº de operações encaminhadas por cada proxy
 	int* server_stats;	//nº de operações respondidas por cada servidor
