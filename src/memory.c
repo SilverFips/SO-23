@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include "memory-private.h"
 #include "memory.h"
+#include "main.h"
 
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
