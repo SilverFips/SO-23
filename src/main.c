@@ -11,13 +11,28 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <signal.h>
+#include <errno.h>
+
 
 #include "main.h"
 #include "memory.h"
 #include "memory-private.h"
 #include "synchronization.h"
 #include "process.h"
+
 #include "configuration.h"
+
+#include "sosignal.h"
+#include "sotime.h"
+#include "log.h"
+
+
+struct main_data* data;
+struct communication_buffers* buffers;
+struct semaphores* sems;
+int end;
+
 
 
 /* Função que reserva a memória dinâmica necessária para a execução
@@ -130,12 +145,14 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	op->client = -1;
 	op->proxy = -1;
 	op->server = -1;
+	op->start_time = getTime(op->start_time);
+
 																
 	produce_begin(sems->main_cli);
 	write_rnd_access_buffer(buffers->main_cli, data->buffers_size, op );
 	produce_end(sems->main_cli);
 	free(op);
-	sleep(0.9);
+	sleep(1);
 	//consume_begin(sems->main_cli);
 	printf("-> A op #%d pode ser consultada.\n", *op_counter);
 	//consume_end(sems->main_cli);
@@ -151,18 +168,21 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 */
 void read_answer(struct main_data* data, struct semaphores* sems) {		
 				
-	// char a[10];
-	// scanf("%s",a);
-	// int i = atoi(a);
-	
+	alarm(0);
 	int i;
 	printf("-> Qual a operação pretendida? (valor máximo é %d)\n", (data->max_ops-1));
 	scanf("%d", &i);
+
+	struct timespec op; 
+	op = getTime(op);
+	char log_data[50];
+	toString(op, log_data);
 
 	semaphore_mutex_lock(sems->results_mutex);
 	char status = data->results[i].status;
 
 	if(status != 'S'){
+		write_file_log(log_data, "read", i);
 		printf("-> A op #%d, ainda não esta realizada.\n", i);
 		semaphore_mutex_unlock(sems->results_mutex);
 		return;
@@ -175,7 +195,9 @@ void read_answer(struct main_data* data, struct semaphores* sems) {
 
 	
 	semaphore_mutex_unlock(sems->results_mutex);
+	write_file_log(log_data, "read", i);
 	printf("-> Op #%d com estado %c foi recebida pelo cliente %d, encaminhada pelo proxy %d, e tratada pelo servido %d!\n", i, status, client, proxy, server);
+	
 }
 
 /* Função que termina a execução do programa sovaccines. Deve começar por 
@@ -208,6 +230,11 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 	destroy_dynamic_memory(sems->prx_srv);
 	destroy_dynamic_memory(sems->srv_cli);
 	destroy_dynamic_memory(sems);
+	
+	//SITIO PARA CHAMADAS DE DESTRUIÇÃO DOS FILES
+	file_destroy_log();
+	
+	end = 1;
 
 }
 
@@ -226,12 +253,14 @@ void wakeup_processes(struct main_data* data, struct semaphores* sems){
 		produce_end(sems->main_cli);
 		produce_end(sems->srv_cli);			
 	}
+	
 	for(int i = 0; i < proxies; i++){
 		produce_end(sems->cli_prx);			
 	}
 	for(int i = 0; i < servers; i++){
 		produce_end(sems->prx_srv);		
-	}	
+	}
+		
 }
 
 /* Função que espera que todos os processos previamente iniciados terminem,
@@ -243,24 +272,29 @@ void wait_processes(struct main_data* data){
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
 	int servers = data->n_servers;
+	
 	for(int i = 0; i < clientes; i++){
+		
 		data->client_stats[i] = wait_process(data->client_pids[i]);			
 	}
+	
 	for(int i = 0; i < proxies; i++){
 		data->proxy_stats[i] = wait_process(data->proxy_pids[i]);
 		
 	}
+	
 	for(int i = 0; i < servers; i++){
 		data->server_stats[i] =wait_process(data->server_pids[i]);
 		
 	}
+	
 }
 
 /* Função que imprime as estatisticas finais do sovaccines, nomeadamente quantas
 * operações foram processadas por cada cliente, proxy e servidor.
 */
 void write_statistics(struct main_data* data){
-	printf("-> Terminando o sovaccines! Imprimindo estatísticas:\n");
+	printf("\n-> Terminando o sovaccines! Imprimindo estatísticas:\n");
 
 	int clientes = data->n_clients;
 	int proxies = data->n_proxies;
@@ -354,19 +388,52 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	printf("	stop - termina a execução do sovaccines.\n");
 	printf("	help - imprime informação sobre as ações disponiveis\n");
 
-	int* p = calloc(1,sizeof(int));
-	//*p = 0;
-	int end = 0;
+	int p = 0;
+	struct timespec op;
+	
+	//REFERENCIA A PARTE DO SIGNAL 
+	struct sigaction sa;
+	sa.sa_handler = sig_handler;
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	
 
+	if (sigaction(SIGINT, &sa, NULL) == -1) {
+		perror("main:");
+		exit(-1);
+	}
+
+	//ALARME
+	struct sigaction s;
+	s.sa_handler = sig_handler;
+	s.sa_flags = SA_RESTART;
+	sigemptyset(&s.sa_mask);	
+	if (sigaction(SIGALRM, &s, NULL) == -1) {
+		perror("main:");
+		exit(-1);
+	}
+	alarm(data->alarm);
+
+	//WHILE PRINCIPAL
 	while(end != 1){
+		// OPERACOES NECESSARIAS PARA O LOG FILE
+		op = getTime(op);
+		char log_data[50];
+		toString(op, log_data);
+		//
+		
 		char resp[10];
 		printf("-> Introduzir ação:\n");
 		scanf("%s", resp);
 
+		if(end == 1){
+			printf("-------------------------------------------------------------------------\n");
+			return;
+		}
+			
 		if(strcmp(resp,"stop") == 0){
+				write_file_log(log_data, resp, -1);
 				stop_execution(data, buffers, sems);
-				end = 1;
-				free(p);
 		}else if(strcmp(resp,"help") == 0){
 				printf("Ações disponiveis: \n");
 				printf("	op - criar um pedido de aquisição de vacinas\n");
@@ -374,21 +441,23 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 				printf("	stop - termina a execução do sovaccines.\n");
 				printf("	help - imprime informação sobre as ações disponiveis\n");
 		}else if(strcmp(resp,"op") == 0){
-			if(data->max_ops < ((*p)+1)){			
+			write_file_log(log_data, resp, -1);
+			if(data->max_ops < ((p)+1)){			
 					printf("-> O número máximo de pedidos foi alcançado!\n");
 				}else{
-					create_request(p, buffers, data, sems); 
+					alarm(2);
+					create_request(&p, buffers, data, sems); 
+					alarm(data->alarm);
 				}
 		} else if(strcmp(resp,"read") == 0){
 			
 				read_answer(data, sems);
+				alarm(data->alarm);
 		}else{
 			printf("-> Ação não reconhecida, insira 'help' para assistência.\n");
 		}
 		printf("-------------------------------------------------------------------------\n");
-	}
-
-	
+	}		
 }
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de operações, o tamanho dos buffers de memória partilhada
@@ -412,33 +481,44 @@ int main(int argc, char *argv[]) {
 	// 	printf("Exemplo: ./bin/sovaccines 10 10 1 1 1\n");
     //     exit(1);
 	}else{
+
 				
-		struct main_data* data = create_dynamic_memory(sizeof(struct main_data));
-		struct communication_buffers* buffers = create_dynamic_memory(sizeof(struct communication_buffers));
+		data = create_dynamic_memory(sizeof(struct main_data));
+		buffers = create_dynamic_memory(sizeof(struct communication_buffers));
 		buffers->main_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
 		buffers->cli_prx = create_dynamic_memory(sizeof(struct circular_buffer));
 		buffers->prx_srv = create_dynamic_memory(sizeof(struct rnd_access_buffer));
 		buffers->srv_cli = create_dynamic_memory(sizeof(struct circular_buffer));
-		struct semaphores* sems = create_dynamic_memory(sizeof(struct semaphores));
+		sems = create_dynamic_memory(sizeof(struct semaphores));
 		sems->main_cli = create_dynamic_memory(sizeof(struct prodcons));
 		sems->cli_prx = create_dynamic_memory(sizeof(struct prodcons));
 		sems->prx_srv = create_dynamic_memory(sizeof(struct prodcons));
 		sems->srv_cli = create_dynamic_memory(sizeof(struct prodcons));
 		
+	
 		//execute main code
 		main_args(argc, argv, data);
+
+		
+
+		dados(buffers, data, sems);
 		
 		create_dynamic_memory_buffers(data);
 		create_shared_memory_buffers(data, buffers);
 		create_semaphores(data, sems);
-		
+		end = 0;
+		//VARIAVEL SO PARA TESTE
+		(data->alarm) = 2;
+		file_log_begin("./bin/log");
+		//--------------------------		
 		launch_processes(buffers, data, sems);
+		
 		user_interaction(buffers, data, sems);
 
 		
 	}
 
-	
+
 }
 
 

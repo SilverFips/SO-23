@@ -48,7 +48,7 @@ void semaphore_destroy(char* name, sem_t* semaphore){
 */
 void produce_begin(struct prodcons* pc){
 	if(sem_wait(pc->empty) == -1){
-		perror("wait empty");
+		perror("produce begin");
 	}
 }
 
@@ -57,7 +57,7 @@ void produce_begin(struct prodcons* pc){
 */
 void produce_end(struct prodcons* pc){
 	if(sem_post(pc->full) == -1){
-		perror("post full");
+		perror("produce end");
 		
 	}
 }
@@ -67,7 +67,7 @@ void produce_end(struct prodcons* pc){
 */
 void consume_begin(struct prodcons* pc){
 	if(sem_wait(pc->full) == -1){
-		perror("wait full");
+		perror("consume begin");
 	}
 }
 
@@ -76,7 +76,7 @@ void consume_begin(struct prodcons* pc){
 */
 void consume_end(struct prodcons* pc){
 	if(sem_post(pc->empty) == -1){
-		perror("post empty");
+		perror("consume end");
 	}
 }
 
@@ -84,7 +84,7 @@ void consume_end(struct prodcons* pc){
 */
 void semaphore_mutex_lock(sem_t* sem){
 	if(sem_wait(sem) == -1){
-		perror("wait mutex");
+		perror("mutex lock");
 	}
 }
 
@@ -92,7 +92,7 @@ void semaphore_mutex_lock(sem_t* sem){
 */
 void semaphore_mutex_unlock(sem_t* sem){
 	if(sem_post(sem) == -1){
-		perror("post mutex");
+		perror("mutex unlock");
 	}
 }
 

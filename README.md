@@ -15,3 +15,4 @@ Comandos makefile:
 Implementação:
 	Ao correr o projeto, não parece que haja limitações a este, sendo que executa as operações pedidas.
 	
+Os tempos no alarme parecem iguais mas é por causa do processo rápido.
