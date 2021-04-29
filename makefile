@@ -29,7 +29,7 @@ clean :
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines $(BIN_DIR)/log
 
 valgrind:
-	valgrind --leak-check=full --track-origins=yes --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines 4 3 3 4 5
+	valgrind --leak-check=full --track-origins=yes --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines $(BIN_DIR)/config.txt
 
 exec:
-	$(BIN_DIR)/sovaccines 4 3 3 4 3
+	$(BIN_DIR)/sovaccines $(BIN_DIR)/config.txt

@@ -473,8 +473,11 @@ void main_args(int argc, char* argv[], struct main_data* data) {
 
 int main(int argc, char *argv[]) {
 //init data structures
-	if(argc != 1){
-		perror("Numero de parametros incorretos.\n");
+	if(argc != 2){
+		printf("Numero de parametros incorretos.\n");
+		printf("Estrutura: sovaccines bin/<nome_fich>\n");
+		printf("Exemplo: ./bin/sovaccines bin/<nome_fich>\n");
+		exit(1);
 	// if(argc != 6) {
 	// 	perror("Nao foram dados o numero de parametros corretos.\n");
 	// 	printf("Estrutura: sovaccines max_ops buffers_size n_clients n_proxies n_servers\n");
@@ -508,8 +511,8 @@ int main(int argc, char *argv[]) {
 		create_semaphores(data, sems);
 		end = 0;
 		//VARIAVEL SO PARA TESTE
-		(data->alarm) = 2;
-		file_log_begin("./bin/log");
+		// (data->alarm) = 2;
+		// file_log_begin("./bin/log");
 		//--------------------------		
 		launch_processes(buffers, data, sems);
 		
