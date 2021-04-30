@@ -32,4 +32,4 @@ valgrind:
 	valgrind --leak-check=full --track-origins=yes --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines $(BIN_DIR)/config.txt
 
 exec:
-	$(BIN_DIR)/sovaccines $(BIN_DIR)/config.txt
+	$(BIN_DIR)/sovaccines $(BIN_DIR)/config
