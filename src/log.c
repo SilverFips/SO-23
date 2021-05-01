@@ -1,3 +1,10 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +20,6 @@ void file_log_begin(char* name){
 
 void write_file_log(char* data, char* instruction, int argument){
     char arr[50];
-    printf("instruction %s\n", instruction);
     if(argument == -1){
         sprintf(arr, "%s %s\n", data, instruction);
     }else {

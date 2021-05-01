@@ -1,7 +1,13 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include "stats.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
 #include "memory.h"
 #include "sotime.h"
 
@@ -38,6 +44,8 @@ void write_stats_file(struct main_data* data, struct semaphores* sems){
 		sprintf(arr, "      Server %d respondeu %d pedidos!\n",i ,data->server_stats[i]);
         fputs(arr, stats_file);
 	}
+
+    semaphore_mutex_lock(sems->results_mutex);
 
     fputs("\nOperation Statistics:\n", stats_file);
     struct operation* ops = data->results;
@@ -79,6 +87,10 @@ void write_stats_file(struct main_data* data, struct semaphores* sems){
             sprintf(arr, "Ended: %s\n", times);
             fputs(arr, stats_file);
 
+            double total_time = (op.end_time.tv_sec - op.start_time.tv_sec) + (op.end_time.tv_nsec - op.start_time.tv_nsec) / 1000000000L;
+            sprintf(arr, "Total Time: %lf\n", total_time);
+            fputs(arr, stats_file);
+
             fputs("\n", stats_file);
         }
         
@@ -86,5 +98,7 @@ void write_stats_file(struct main_data* data, struct semaphores* sems){
     if(count == 0){
         fputs("Não foi feita nenhuma operação", stats_file);
     }
+
+    semaphore_mutex_unlock(sems->results_mutex);
 
 }

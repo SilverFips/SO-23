@@ -14,6 +14,9 @@
 #include "client.h"
 #include "sotime.h"
 
+#include <errno.h>
+#include <unistd.h>
+
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito
 * onde cada iteração do ciclo tem dois passos: primeiro, lê uma operação
@@ -98,6 +101,7 @@ void client_get_operation(struct operation* op, struct communication_buffers* bu
 */
 void client_process_operation(struct operation* op, int cient_id, int* counter){
     
+    sleep(3.3);
     op->status = 'C';
     op->client = cient_id;
     (*counter)++;

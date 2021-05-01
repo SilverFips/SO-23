@@ -233,7 +233,6 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 	destroy_dynamic_memory(sems);
 	
 	//SITIO PARA CHAMADAS DE DESTRUIÇÃO DOS FILES
-	file_destroy_log();
 	file_destroy_stats();
 	
 	end = 1;
@@ -431,7 +430,9 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 
 		if(end == 1){
 			printf("-------------------------------------------------------------------------\n");
-			return;
+			write_file_log(log_data, "stop", -1);
+			file_destroy_log();
+			break;
 		}
 			
 		if(strcmp(resp,"stop") == 0){
