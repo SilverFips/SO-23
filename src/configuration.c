@@ -13,29 +13,6 @@
 #include "log.h"
 #include <ctype.h> // for isspace on trimwhitespace
 
-
-
-
-char *trimwhitespace(char *str)
-{
-  char *end;
-
-  // Trim leading space
-  while(isspace((unsigned char)*str)) str++;
-
-  if(*str == 0)  // All spaces?
-    return str;
-
-  // Trim trailing space
-  end = str + strlen(str) - 1;
-  while(end > str && isspace((unsigned char)*end)) end--;
-
-  // Write new null terminator character
-  end[1] = '\0';
-
-  return str;
-}
-
 /*
 * Reads from the file that receives the program arguments and writes them into the main_data structure
 * Calls the functions to create the log and statistic files
@@ -64,19 +41,17 @@ int open_begin_file(char* name_file, struct main_data* data){
         } else if(i == 4){
             data->n_servers = atoi(line);
         } else if(i == 5){
-            char filename[256]; 
-            char *token = strtok(line, ".");
-            sprintf(filename, "./bin/%s\n", token);
-            char *trimmedFileName = trimwhitespace(filename);
-
-            file_log_begin(trimmedFileName);
+            char filename[256];
+            char file[256]; 
+            sscanf(line, "%s", file);
+            sprintf(filename, "./bin/%s", file);
+            file_log_begin(filename);
         //} else if(i == 6){
-            // char buffer[50];
-            // sprintf(buffer, "./bin/%s", line);
-            // printf("Nome ficheiro statistics: %s\n", buffer);
-            // statistic_file = fopen(buffer, "a");
-            // if(statistic_file == NULL){
-            //     perror("creating statistic_file");
+            // char filename[50];
+            // char file[50]; 
+            // sscanf(line, "%s", file);
+            // sprintf(filename, "./bin/%s", file);
+            // file_stats_begin(filename);
         //     }
         } else if( i == 7){
             data->alarm = atoi(line);

@@ -63,9 +63,6 @@ void alarm_message(int signum) {
         }
     }
     printf("////////////////////////////////////////////////\n");
-    printf("-> Introduzir ação:\n");
-
-
     semaphore_mutex_unlock(sems->results_mutex);
     alarm(data->alarm);
 }

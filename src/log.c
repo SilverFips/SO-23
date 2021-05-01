@@ -20,7 +20,6 @@ void file_log_begin(char* name){
 
 void write_file_log(char* data, char* instruction, int argument){
     char arr[50];
-    printf("instruction %s\n", instruction);
     if(argument == -1){
         sprintf(arr, "%s %s\n", data, instruction);
     }else {
