@@ -3,7 +3,7 @@ SRC_DIR = src
 INC_DIR = include
 BIN_DIR = bin
 
-OBJETOS = client.o main.o memory.o process.o proxy.o server.o synchronization.o sosignal.o sotime.o log.o configuration.o
+OBJETOS = client.o main.o memory.o process.o proxy.o server.o synchronization.o sosignal.o sotime.o log.o configuration.o stats.o
 
 
 main.o = $(INC_DIR)/main.h $(INC_DIR)/sosignal.h $(INC_DIR)/memory.h  $(INC_DIR)/synchronization.h  $(INC_DIR)/process.h

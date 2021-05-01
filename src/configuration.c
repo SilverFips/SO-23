@@ -11,6 +11,7 @@
 #include <string.h>
 #include "main.h"
 #include "log.h"
+#include "stats.h"
 #include <ctype.h> // for isspace on trimwhitespace
 
 
@@ -70,14 +71,13 @@ int open_begin_file(char* name_file, struct main_data* data){
             char *trimmedFileName = trimwhitespace(filename);
 
             file_log_begin(trimmedFileName);
-        //} else if(i == 6){
-            // char buffer[50];
-            // sprintf(buffer, "./bin/%s", line);
-            // printf("Nome ficheiro statistics: %s\n", buffer);
-            // statistic_file = fopen(buffer, "a");
-            // if(statistic_file == NULL){
-            //     perror("creating statistic_file");
-        //     }
+        } else if(i == 6){
+            char filename[256]; 
+            char *token = strtok(line, ".");
+            sprintf(filename, "./bin/%s\n", token);
+            char *trimmedFileName = trimwhitespace(filename);
+
+            file_stats_begin(trimmedFileName);
         } else if( i == 7){
             data->alarm = atoi(line);
             break;

@@ -26,6 +26,7 @@
 #include "sosignal.h"
 #include "sotime.h"
 #include "log.h"
+#include "stats.h"
 
 
 struct main_data* data;
@@ -233,6 +234,7 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 	
 	//SITIO PARA CHAMADAS DE DESTRUIÇÃO DOS FILES
 	file_destroy_log();
+	file_destroy_stats();
 	
 	end = 1;
 
@@ -311,6 +313,7 @@ void write_statistics(struct main_data* data){
 	for(int i = 0; i < servers; i++){
 		printf("Server %d respondeu %d pedidos!\n",i ,data->server_stats[i]);
 	}
+	write_stats_file(data, sems);
 }
 
 /* Função que liberta todos os buffers de memória dinâmica previamente
