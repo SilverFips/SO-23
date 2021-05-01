@@ -1,3 +1,10 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include "log.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -44,7 +44,7 @@ char *trimwhitespace(char *str)
 int open_begin_file(char* name_file, struct main_data* data){
     FILE *file;
     
-    FILE *statistic_file;
+    //FILE *statistic_file;
     file = fopen(name_file, "r");
     if(file == NULL){
         perror("abrir ficheiro");

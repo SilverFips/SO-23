@@ -1,3 +1,10 @@
+/**
+ * Grupo: SO-023
+ * Francisco Martins nº 51073
+ * Filipe Pedroso nº 51958
+ * Tiago Lourenço nº 46670
+*/
+
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,16 +17,6 @@ struct timespec getTime( struct timespec time){
     }
     return time;
 }
-
-//VER QUAL DOS DOIS É
-
-// void getTime( struct timespec time){
-//     if( clock_gettime( CLOCK_REALTIME, &time) == -1 ) {
-//         perror( "clock gettime" );
-//     }
-//     printf("time: %ld\n", time.tv_sec);
-    
-// }
 
 
 void toString(struct timespec time, char *string){
