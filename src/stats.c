@@ -80,7 +80,7 @@ void write_stats_file(struct main_data* data, struct semaphores* sems){
             fputs(arr, stats_file);
         
             toString(op.server_time, times);
-            sprintf(arr, "Sercer_time: %s\n", times);
+            sprintf(arr, "Server_time: %s\n", times);
             fputs(arr, stats_file);
         
             toString(op.end_time, times);

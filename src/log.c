@@ -12,7 +12,7 @@
 FILE *log_file;
 
 void file_log_begin(char* name){
-    if ((log_file = fopen(name, "a")) == NULL){
+    if ((log_file = fopen(name, "w")) == NULL){
         perror(name);
         exit(1);
     }

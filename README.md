@@ -14,5 +14,11 @@ Comandos makefile:
 
 Implementação:
 	Ao correr o projeto, não parece que haja limitações a este, sendo que executa as operações pedidas.
+	Contudo:	
+	- Os tempos parecem iguais mas é por causa do processo rápido.
+	- Ao realizar a operação read os alarmes ficam temporariamente parados, ate esta estar terminada
+	- O ficheiro de configuração deve ser colocado na pasta bin, sendo que os outros ficheiros
+	serão igualmente criados nessa pasta
+	- Para maior facilidade em apagar (com "make clean"), devem ser colocados os nomes na variável "CLEAN"
+	os nomes pretendidos para os ficheiros de log e de estatisticas
 	
-Os tempos no alarme parecem iguais mas é por causa do processo rápido.

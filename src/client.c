@@ -14,8 +14,6 @@
 #include "client.h"
 #include "sotime.h"
 
-#include <errno.h>
-#include <unistd.h>
 
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito
@@ -100,8 +98,7 @@ void client_get_operation(struct operation* op, struct communication_buffers* bu
 * incrementando o contador de operações.
 */
 void client_process_operation(struct operation* op, int cient_id, int* counter){
-    
-    sleep(3.3);
+
     op->status = 'C';
     op->client = cient_id;
     (*counter)++;
@@ -166,5 +163,6 @@ void client_process_answer(struct operation* op, struct main_data* data, struct 
     semaphore_mutex_unlock(sems->results_mutex);
     
     printf("-> A op #%d foi realizada com sucesso.\n", data->results[id].id);
+    consume_end(sems->main_cli);
 
 }

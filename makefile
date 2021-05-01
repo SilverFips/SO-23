@@ -4,7 +4,7 @@ INC_DIR = include
 BIN_DIR = bin
 
 OBJETOS = client.o main.o memory.o process.o proxy.o server.o synchronization.o sosignal.o sotime.o log.o configuration.o stats.o
-
+CLEAN = sovaccines log stats
 
 main.o = $(INC_DIR)/main.h $(INC_DIR)/sosignal.h $(INC_DIR)/memory.h  $(INC_DIR)/synchronization.h  $(INC_DIR)/process.h
 process.o = $(INC_DIR)/main.h  $(INC_DIR)/client.h $(INC_DIR)/server.h  $(INC_DIR)/proxy.h $(INC_DIR)/process.h
@@ -26,10 +26,10 @@ sovaccines : $(OBJETOS)
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<
 
 clean :
-	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/sovaccines $(BIN_DIR)/log $(BIN_DIR)/stats
+	rm -f $(OBJ_DIR)/*.o $(addprefix $(BIN_DIR)/,$(CLEAN))
 
 valgrind:
-	valgrind --leak-check=full --track-origins=yes --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines $(BIN_DIR)/config.txt
+	valgrind --leak-check=full --track-origins=yes --dsymutil=yes --show-leak-kinds=all $(BIN_DIR)/sovaccines $(BIN_DIR)/config
 
 exec:
 	$(BIN_DIR)/sovaccines $(BIN_DIR)/config

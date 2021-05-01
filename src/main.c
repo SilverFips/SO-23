@@ -154,9 +154,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	produce_end(sems->main_cli);
 	free(op);
 	sleep(1);
-	//consume_begin(sems->main_cli);
 	printf("-> A op #%d pode ser consultada.\n", *op_counter);
-	//consume_end(sems->main_cli);
 	(*op_counter)++;
 }
 
@@ -438,7 +436,9 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 		if(strcmp(resp,"stop") == 0){
 				write_file_log(log_data, resp, -1);
 				stop_execution(data, buffers, sems);
+				file_destroy_log();
 		}else if(strcmp(resp,"help") == 0){
+				write_file_log(log_data, resp, -1);
 				printf("Ações disponiveis: \n");
 				printf("	op - criar um pedido de aquisição de vacinas\n");
 				printf("	read - consultar o estado de um pedido (valor máximo é %d)\n", data->max_ops);
